@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지 | 안심거래 뱅킹</title>
+    <style>
+        :root {
+            --primary-color: #001a72;
+            --accent-color: #ff4757;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --border-color: #e1e4e8;
+            --safe-color: #2ecc71;
+        }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg-color); color: #333; }
+
+        .navbar { background: #fff; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .logo { font-size: 22px; font-weight: bold; color: var(--primary-color); text-decoration: none; }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        .user-welcome { margin-bottom: 30px; }
+        .user-welcome h2 { font-size: 28px; margin: 0; }
+        .user-welcome span { color: var(--primary-color); font-weight: bold; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+        .card { background: var(--card-bg); border-radius: 16px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* 자산 카드 */
+        .account-card { background: linear-gradient(135deg, #001a72 0%, #0033cc 100%); color: white; border: none; }
+        .balance-label { font-size: 14px; opacity: 0.8; }
+        .balance-amount { font-size: 32px; font-weight: bold; margin: 10px 0; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-action {
+            background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; text-decoration: none; font-size: 13px;
+            text-align: center; flex: 1;
+        }
+        .btn-action:hover { background: rgba(255,255,255,0.3); }
+
+        /* 통계 섹션 더미 */
+        .stat-placeholder { background: #f8f9fa; border: 1px dashed #ccc; border-radius: 12px; height: 120px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px; }
+
+        /* 리스트 스타일 */
+        .transaction-list { list-style: none; padding: 0; }
+        .transaction-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .transaction-item:last-child { border: none; }
+        .trans-info .title { font-weight: bold; display: block; }
+        .trans-info .date { font-size: 12px; color: #999; }
+        .trans-amount { font-weight: bold; }
+        .minus { color: var(--accent-color); }
+        .plus { color: var(--safe-color); }
+
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; }
+        .info-row .label { color: #888; }
+
+        .btn-edit {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 45px; margin-top: 10px;
+            background: #f8f9fa; color: #333; border: 1px solid var(--border-color);
+            border-radius: 8px; font-weight: bold; cursor: pointer;
+            text-decoration: none; transition: 0.2s; font-size: 14px;
+        }
+        .btn-edit:hover { background: #eef2ff; color: var(--primary-color); border-color: var(--primary-color); }
+
+        .quick-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .menu-item { background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; text-decoration: none; color: #555; font-size: 13px; font-weight: bold; transition: 0.2s; border: 1px solid transparent; }
+        .menu-item:hover { background: #eef2ff; color: var(--primary-color); border-color: var(--primary-color); }
+
+        /* 배지 스타일 */
+        .badge { background: #e8f5e9; color: var(--safe-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+    <a th:href="@{/}" class="logo">안심거래 뱅킹</a>
+    <div class="nav-right">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" style="background:none; border:none; color:#666; cursor:pointer; font-weight:bold;">로그아웃</button>
+        </form>
+    </div>
+</header>
+
+<div class="container">
+    <section class="user-welcome">
+        <h2>안녕하세요, <span th:text="${member.name}">사용자</span>님!</h2>
+        <p style="color: #666; margin-top: 5px;">자산 관리와 사기 예방을 한 곳에서 확인하세요.</p>
+    </section>
+
+    <div class="dashboard-grid">
+        <div class="main-column">
+            <div class="card account-card">
+                <div class="balance-label">대표계좌 (입출금) <span class="badge">안심인증</span></div>
+                <div class="balance-amount">5,240,000 원</div>
+                <div class="btn-group">
+                    <a th:href="@{/account/create}" class="btn-action">계좌생성</a>
+                    <a th:href="@{/transfer}" class="btn-action">송금</a>
+                    <a th:href="@{/account/list}" class="btn-action">계좌조회</a>
+                    <a th:href="@{/account/withdraw}" class="btn-action">인출</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    사기 통계 대시보드
+                    <a th:href="@{/stats/dashboard}" style="font-size:12px; font-weight:normal; color:var(--primary-color); text-decoration:none;">자세히 보기 ></a>
+                </div>
+                <div class="stat-placeholder">
+                    [팀원 C 작업] 위험도 개요 및 지역별 분포 그래프가 노출될 예정입니다.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">최근 거래 내역</div>
+                <ul class="transaction-list">
+                    <li class="transaction-item">
+                        <div class="trans-info">
+                            <span class="title">스타벅스 코리아</span>
+                            <span class="date">2026.01.05 14:20</span>
+                        </div>
+                        <span class="trans-amount minus">- 5,900원</span>
+                    </li>
+                    <li class="transaction-item">
+                        <div class="trans-info">
+                            <span class="title" style="color:var(--safe-color);">[검증완료] 급여 (프로젝트)</span>
+                            <span class="date">2026.01.01 09:00</span>
+                        </div>
+                        <span class="trans-amount plus">+ 3,500,000원</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="side-column">
+            <div class="card">
+                <div class="card-title">내 정보</div>
+                <div class="info-row">
+                    <span class="label">아이디</span>
+                    <span class="value" th:text="${member.userId}">userid</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">보안등급</span>
+                    <span class="value" style="color:var(--safe-color); font-weight:bold;">최상</span>
+                </div>
+                <a th:href="@{/mypage/confirm}" class="btn-edit">정보 수정</a>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="font-size: 16px;">사기 신고 센터</div>
+                <div class="quick-menu">
+                    <a th:href="@{/report/add}" class="menu-item">사기 신고</a>
+                    <a th:href="@{/report/view}" class="menu-item">신고 조회</a>
+                    <a th:href="@{/report/unblock}" class="menu-item">차단 해제</a>
+                    <a th:href="@{/support}" class="menu-item">고객지원</a>
+                </div>
+            </div>
+
+            <div class="card" style="background:#fff9db; border:1px solid #ffe066;">
+                <p style="margin:0; font-size:13px; font-weight:bold; color:#f08c00;">⚠️ 보안 주의보</p>
+                <p style="margin:5px 0 0 0; font-size:12px; color:#856404;">최근 중고거래 사기가 급증하고 있습니다. 거래 전 꼭 계좌를 조회하세요.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*[# th:if="${msg}"]*/
+    alert([[${msg}]]);
+    /*[/]*/
+</script>
+
+</body>
+</html>

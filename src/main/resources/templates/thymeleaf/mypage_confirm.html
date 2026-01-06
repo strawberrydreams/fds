@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>본인 확인 | 안심거래</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .confirm-container { background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
+        .logo { font-size: 22px; font-weight: bold; color: #001a72; margin-bottom: 20px; display: block; text-decoration: none; }
+        h2 { font-size: 20px; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 30px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 20px; }
+        .btn-submit { width: 100%; padding: 14px; background: #001a72; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="confirm-container">
+    <a th:href="@{/}" class="logo">안심거래 뱅킹</a>
+    <h2>본인 확인</h2>
+    <p>안전한 정보 수정을 위해 <br>현재 비밀번호를 다시 입력해주세요.</p>
+    <form th:action="@{/mypage/confirm}" method="post">
+        <input type="password" name="currentPw" placeholder="현재 비밀번호 입력" required>
+        <button type="submit" class="btn-submit">확인</button>
+    </form>
+</div>
+<script th:if="${msg}">alert([[${msg}]]);</script>
+<script th:inline="javascript">
+    /*[# th:if="${msg}"]*/
+    alert([[${msg}]]);
+    /*[/]*/
+</script>
+</body>
+</html>

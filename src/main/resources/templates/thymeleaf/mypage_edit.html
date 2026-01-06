@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>정보 수정 | 안심거래</title>
+    <style>
+        :root { --primary-color: #001a72; --bg-color: #f0f2f5; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; }
+        .navbar { background: #fff; height: 70px; display: flex; align-items: center; padding: 0 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .container { max-width: 600px; margin: 50px auto; padding: 0 20px; }
+        .card { background: #fff; border-radius: 16px; padding: 35px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h2 { color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+
+        .form-group { margin-bottom: 20px; }
+        .label { display: block; font-size: 14px; font-weight: bold; color: #555; margin-bottom: 8px; }
+
+        /* 읽기 전용 스타일 */
+        input[readonly] { background-color: #f8f9fa; color: #999; border: 1px solid #eee; cursor: not-allowed; }
+
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        input:focus { border-color: var(--primary-color); outline: none; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 30px; }
+        .btn-save { flex: 2; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 1; padding: 15px; background: #eee; color: #333; border: none; border-radius: 8px; text-align: center; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+<header class="navbar">
+    <a th:href="@{/}" style="font-size: 20px; font-weight: bold; color: var(--primary-color); text-decoration: none;">안심거래 뱅킹</a>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>회원 정보 수정</h2>
+        <form th:action="@{/mypage/update}" method="post">
+            <div class="form-group">
+                <span class="label">아이디 (변경 불가)</span>
+                <input type="text" th:value="${member.userId}" readonly>
+            </div>
+            <div class="form-group">
+                <span class="label">이름 (변경 불가)</span>
+                <input type="text" th:value="${member.name}" readonly>
+            </div>
+            <div class="form-group">
+                <span class="label">생년월일 / 성별 (변경 불가)</span>
+                <input type="text" th:value="${member.birth} + ' / ' + ${member.gender}" readonly>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+            <div class="form-group">
+                <span class="label">이메일 주소</span>
+                <input type="email" name="userEmail" th:value="${member.userEmail}" required>
+            </div>
+            <div class="form-group">
+                <span class="label">새 비밀번호</span>
+                <input type="password" name="newPw" placeholder="비밀번호 변경 시에만 입력하세요">
+            </div>
+
+            <div class="btn-group">
+                <a th:href="@{/mypage}" class="btn-cancel">취소</a>
+                <button type="submit" class="btn-save">정보 수정 완료</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

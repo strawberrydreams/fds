@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 | 안심거래 서비스</title>
+    <style>
+        /* 기본 스타일 */
+        body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f9; margin: 0; padding: 0; }
+
+        /* 상단 네비게이션 바 (가입 화면과 동일) */
+        .navbar {
+            background-color: #ffffff;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .navbar-brand { font-size: 24px; font-weight: bold; color: #4A90E2; text-decoration: none; }
+        .navbar-menu { display: flex; gap: 30px; }
+        .navbar-menu a { text-decoration: none; color: #555; font-weight: 500; }
+        .navbar-auth { display: flex; gap: 15px; }
+        .btn-auth { text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: bold; }
+        .btn-login { background-color: #4A90E2; color: white; } /* 현재 페이지 강조 */
+        .btn-join { color: #4A90E2; }
+
+        /* 로그인 폼 컨테이너 */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+        }
+        .login-container {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .error-msg { color: #e74c3c; font-size: 14px; text-align: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a th:href="@{/}" class="navbar-brand">안심거래</a>
+    <div class="navbar-menu">
+        <a href="#">입출금 거래</a>
+        <a href="#">계좌 관리</a>
+        <a href="#">사기 계좌 신고</a>
+        <a href="#">사기 통계 대시보드</a>
+        <a href="#">고객지원</a>
+    </div>
+    <div class="navbar-auth">
+        <a th:href="@{/login}" class="btn-auth btn-login">로그인</a>
+        <a th:href="@{/join}" class="btn-auth btn-join">회원가입</a>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="login-container">
+        <h2>로그인</h2>
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label>아이디</label>
+                <input type="text" name="username" placeholder="아이디를 입력하세요" required />
+            </div>
+
+            <div class="form-group">
+                <label>비밀번호</label>
+                <input type="password" name="password" placeholder="비밀번호를 입력하세요" required />
+            </div>
+
+            <button type="submit" class="btn-submit">로그인하기</button>
+
+            <div style="text-align: center; margin-top: 15px; font-size: 13px;">
+                <a th:href="@{/find-account}" style="color: #666; text-decoration: none; border-bottom: 1px solid #ccc; padding-bottom: 2px;">아이디 / 비밀번호 찾기</a>
+            </div>
+        </form>
+
+        <div th:if="${param.error}" class="error-msg">
+            아이디 또는 비밀번호가 올바르지 않습니다.
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

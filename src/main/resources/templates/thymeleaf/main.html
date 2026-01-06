@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>안심거래 - 메인</title>
+    <style>
+        /* 기존 스타일 유지 */
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: #f4f7fa; color: #333; }
+        ul { list-style: none; margin: 0; padding: 0; }
+        a { text-decoration: none; color: inherit; }
+
+        .navbar { background: #fff; border-bottom: 1px solid #e1e4e8; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 50px; position: relative; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: bold; color: #001a72; display: flex; align-items: center; }
+        .logo-icon { width: 25px; height: 25px; background: #001a72; border-radius: 50%; margin-right: 10px; }
+
+        .nav-menu { display: flex; gap: 40px; height: 100%; align-items: center; }
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; cursor: pointer; font-weight: 500; }
+
+        /* 하위 메뉴 드롭다운 */
+        .dropdown { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #e1e4e8; min-width: 160px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 10px 0; }
+        .dropdown li { padding: 12px 20px; font-size: 14px; white-space: nowrap; text-align: left; }
+        .dropdown li:hover { background-color: #f8f9fa; color: #001a72; }
+        .nav-item:hover .dropdown { display: block; }
+
+        /* --- 버튼 크기 통일 설정 --- */
+        .nav-auth { display: flex; align-items: center; gap: 10px; }
+
+        /* 공통 버튼 스타일 (로그인, 회원가입, 마이페이지, 로그아웃 모두 동일하게) */
+        .auth-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100px;           /* 버튼 너비 고정 */
+            height: 38px;           /* 버튼 높이 고정 */
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-sizing: border-box;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .btn-login { background: #001a72; color: #fff; }
+        .btn-join { border: 1px solid #001a72; color: #001a72; background: #fff; }
+
+        /* 로그인 후 버튼들 */
+        .btn-mypage { border: 1px solid #001a72; color: #001a72; background: #fff; text-decoration: none; }
+        .btn-mypage:hover { background: #f0f4ff; }
+
+        .btn-logout { background: #ff4757; color: #fff; }
+        .btn-logout:hover { background: #ff6b81; }
+
+        .user-welcome-text { font-size: 14px; color: #555; margin-right: 10px; }
+
+        /* 히어로 섹션 생략... */
+        .hero { height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(rgba(0,26,114,0.7), rgba(0,26,114,0.7)), url('https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; text-align: center; }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; letter-spacing: -1px; }
+        .hero p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 40px; }
+        .btn-start { padding: 18px 40px; background: #ff4757; color: white; border-radius: 30px; font-size: 1.2rem; font-weight: bold; transition: transform 0.2s; }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+    <a th:href="@{/}" class="logo">
+        <div class="logo-icon"></div> 안심거래
+    </a>
+
+    <nav>
+        <ul class="nav-menu">
+            <li class="nav-item">입출금 거래 계좌 관리
+                <ul class="dropdown"><li>계좌 생성</li><li>송금</li><li>계좌 조회</li><li>인출</li></ul>
+            </li>
+            <li class="nav-item">사기 계좌 신고
+                <ul class="dropdown"><li>사기 신고</li><li>신고 조회</li><li>계좌 차단 해제 신청</li></ul>
+            </li>
+            <li class="nav-item">사기 통계 대시보드
+                <ul class="dropdown"><li>위험도 개요</li><li>유형별 패턴</li><li>지역/시간 분포</li></ul>
+            </li>
+            <li class="nav-item">고객지원
+                <ul class="dropdown"><li>공지사항</li><li>FAQ</li><li>1:1 문의</li></ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="nav-auth">
+        <th:block th:if="${loginUser == null}">
+            <a th:href="@{/login}" class="auth-btn btn-login">로그인</a>
+            <a th:href="@{/join}" class="auth-btn btn-join">회원가입</a>
+        </th:block>
+
+        <th:block th:if="${loginUser != null}">
+            <span class="user-welcome-text"><strong th:text="${loginUser}">a1234</strong>님</span>
+
+            <a th:href="@{/mypage}" class="auth-btn btn-mypage">마이페이지</a>
+
+            <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                <button type="submit" class="auth-btn btn-logout">로그아웃</button>
+            </form>
+        </th:block>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <h1>당신의 거래를 더 안전하게,<br>안심거래</h1>
+        <p>실시간 사기 계좌 탐지 및 안전한 금융 서비스를 경험하세요.</p>
+        <a th:href="${loginUser != null} ? @{/mypage} : @{/join}" class="btn-start">지금 시작하기</a>
+    </section>
+</main>
+<script th:inline="javascript">
+    /*[# th:if="${msg}"]*/
+    alert([[${msg}]]);
+    /*[/]*/
+</script>
+<script th:inline="javascript">
+    /*[# th:if="${param.loginSuccess}"]*/
+    alert("로그인에 성공하였습니다!");
+    history.replaceState({}, null, location.pathname);
+    /*[/]*/
+</script>
+
+</body>
+</html>
