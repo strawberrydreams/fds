@@ -12,7 +12,7 @@ public interface UserMapper {
     void save(MemberDTO memberDTO);
 
     // 2. 로그인 및 정보 조회 (아이디로 찾기)
-    @Select("SELECT USER_ID, NAME, USER_PW, USER_EMAIL, BIRTH, GENDER FROM USERS WHERE USER_ID = #{userId}")
+    @Select("SELECT USER_ID, NAME, USER_PW, USER_EMAIL, GENDER, BIRTH, ROLE FROM USERS WHERE USER_ID = #{userId}")
     MemberDTO findByUserId(String userId);
 
     // 3. 아이디 찾기 (이름과 이메일 일치 확인)
