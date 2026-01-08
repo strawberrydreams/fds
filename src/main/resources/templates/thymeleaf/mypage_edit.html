@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>정보 수정 | 안심거래</title>
     <style>
         :root { --primary-color: #001a72; --bg-color: #f0f2f5; }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; }
-        .navbar { background: #fff; height: 70px; display: flex; align-items: center; padding: 0 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; }
+
+        /* 기존 .navbar 스타일은 삭제 (공통 헤더에서 가져옴) */
+
         .container { max-width: 600px; margin: 50px auto; padding: 0 20px; }
         .card { background: #fff; border-radius: 16px; padding: 35px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        h2 { color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        h2 { color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; font-size: 24px; }
 
         .form-group { margin-bottom: 20px; }
         .label { display: block; font-size: 14px; font-weight: bold; color: #555; margin-bottom: 8px; }
@@ -18,17 +20,20 @@
         input[readonly] { background-color: #f8f9fa; color: #999; border: 1px solid #eee; cursor: not-allowed; }
 
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        input:focus { border-color: var(--primary-color); outline: none; }
+        input:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 5px rgba(0,26,114,0.1); }
 
         .btn-group { display: flex; gap: 10px; margin-top: 30px; }
-        .btn-save { flex: 2; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-cancel { flex: 1; padding: 15px; background: #eee; color: #333; border: none; border-radius: 8px; text-align: center; text-decoration: none; font-weight: bold; }
+        .btn-save { flex: 2; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.2s; }
+        .btn-save:hover { background: #0033cc; }
+        .btn-cancel { flex: 1; padding: 15px; background: #eee; color: #333; border: none; border-radius: 8px; text-align: center; text-decoration: none; font-weight: bold; font-size: 16px; transition: background 0.2s; }
+        .btn-cancel:hover { background: #e0e0e0; }
+
+        hr { border: 0; border-top: 1px solid #eee; margin: 30px 0; }
     </style>
 </head>
 <body>
-<header class="navbar">
-    <a th:href="@{/}" style="font-size: 20px; font-weight: bold; color: var(--primary-color); text-decoration: none;">안심거래 뱅킹</a>
-</header>
+
+<div th:replace="~{thymeleaf/fragments/header :: mainHeader}"></div>
 
 <div class="container">
     <div class="card">
@@ -46,7 +51,9 @@
                 <span class="label">생년월일 / 성별 (변경 불가)</span>
                 <input type="text" th:value="${member.birth} + ' / ' + ${member.gender}" readonly>
             </div>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+            <hr>
+
             <div class="form-group">
                 <span class="label">이메일 주소</span>
                 <input type="email" name="userEmail" th:value="${member.userEmail}" required>
@@ -54,6 +61,7 @@
             <div class="form-group">
                 <span class="label">새 비밀번호</span>
                 <input type="password" name="newPw" placeholder="비밀번호 변경 시에만 입력하세요">
+                <p style="font-size: 12px; color: #888; margin-top: 5px;">* 변경하지 않으려면 비워두세요.</p>
             </div>
 
             <div class="btn-group">
@@ -63,5 +71,12 @@
         </form>
     </div>
 </div>
+
+<script th:inline="javascript">
+    /*[# th:if="${msg}"]*/
+    alert([[${msg}]]);
+    /*[/]*/
+</script>
+
 </body>
 </html>

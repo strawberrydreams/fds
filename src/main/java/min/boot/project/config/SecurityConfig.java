@@ -1,19 +1,23 @@
 package min.boot.project.config;
 
+import min.boot.project.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // 컨트롤러에서 @PreAuthorize 사용을 위해 추가
+@EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final CustomUserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -25,15 +29,23 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 누구나 접근 가능한 페이지 (정적 리소스 포함 추천)
-                        .requestMatchers("/", "/login", "/join", "/find-account", "/check-user", "/reset-password").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        // 1. 공통 접근 허용 (로그인 없이 접근 가능)
+                        .requestMatchers(
+                                "/", "/login", "/join", "/find-account", "/check-user", "/reset-password",
+                                "/danger/**",   // 사기 통계 메뉴 전체 허용
+                                "/support/**",  // 고객지원 하위 경로
+                                "/support"       // 고객지원 메인 경로
+                        ).permitAll()
 
-                        // 2. 관리자 권한이 있어야만 접근 가능한 매핑명 설정
-                        // 팀원이 만든 페이지의 매핑이 /admin/stats, /admin/users 등이라면 모두 차단됨
+                        // 2. 정적 리소스 및 파비콘 허용
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+
+                        // 3. 마이페이지 및 정보 수정 (반드시 로그인 필요)
+                        .requestMatchers("/mypage/**").authenticated()
+
+                        // 4. 관리자 권한
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // 3. 나머지는 로그인한 사용자만 접근 가능
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -51,9 +63,7 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                );
+                .userDetailsService(userDetailsService);
 
         return http.build();
     }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div th:fragment="mainHeader">
+    <header class="navbar">
+        <a th:href="@{/}" class="logo">
+            <div class="logo-icon"></div> 안심거래
+        </a>
+
+        <div class="nav-menu">
+            <div class="nav-item">
+                입출금 거래
+                <ul class="dropdown">
+                    <li><a th:href="@{/account/create}">계좌 생성</a></li>
+                    <li><a th:href="@{/transfer}">송금</a></li>
+                    <li><a th:href="@{/account/list}">계좌 조회</a></li>
+                    <li><a th:href="@{/account/withdraw}">인출</a></li>
+                </ul>
+            </div>
+            <div class="nav-item">
+                사기 계좌 신고
+                <ul class="dropdown">
+                    <li><a th:href="@{/report/add}">사기 신고</a></li>
+                    <li><a th:href="@{/report/list}">신고 조회</a></li>
+                    <li><a th:href="@{/report/unblock}">차단 해제 신청</a></li>
+                </ul>
+            </div>
+            <div class="nav-item">
+                사기 통계 대시보드
+                <ul class="dropdown">
+                    <li><a th:href="@{/danger/start}">위험도 개요</a></li>
+                    <li><a th:href="@{/danger/pattern}">유형별 패턴</a></li>
+                    <li><a th:href="@{/danger/timepos}">지역/시간 분포</a></li>
+                    <li><a th:href="@{/danger/history}">탐지 히스토리</a></li>
+                </ul>
+            </div>
+            <div class="nav-item"><a th:href="@{/support}">고객지원</a></div>
+        </div>
+
+        <div class="nav-auth">
+            <th:block sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="auth-btn btn-login">로그인</a>
+                <a th:href="@{/join}" class="auth-btn btn-join">회원가입</a>
+            </th:block>
+
+            <th:block sec:authorize="isAuthenticated()">
+                <span class="user-welcome-text"><strong th:text="${#authentication.name}">사용자</strong>님</span>
+                <a th:href="@{/mypage}" class="auth-btn btn-mypage">마이페이지</a>
+                <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                    <button type="submit" class="auth-btn btn-logout">로그아웃</button>
+                </form>
+            </th:block>
+        </div>
+    </header>
+
+    <style>
+        /* 네비게이션 공통 스타일 */
+        .navbar { background: #fff; border-bottom: 1px solid #e1e4e8; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 50px; position: relative; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: bold; color: #001a72; display: flex; align-items: center; text-decoration: none; }
+        .logo-icon { width: 25px; height: 25px; background: #001a72; border-radius: 50%; margin-right: 10px; }
+
+        .nav-menu { display: flex; gap: 40px; height: 100%; align-items: center; }
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; cursor: pointer; font-weight: 500; font-size: 15px; color: #333; }
+
+        .dropdown { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #e1e4e8; min-width: 160px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 10px 0; list-style: none; }
+        .dropdown li { padding: 12px 20px; font-size: 14px; white-space: nowrap; text-align: left; }
+        .dropdown li:hover { background-color: #f8f9fa; }
+        .dropdown li a { text-decoration: none; color: inherit; display: block; }
+        .nav-item:hover .dropdown { display: block; }
+
+        .nav-auth { display: flex; align-items: center; gap: 10px; }
+        .auth-btn { display: inline-flex; align-items: center; justify-content: center; width: 100px; height: 38px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; box-sizing: border-box; border: none; transition: 0.2s; text-decoration: none; }
+
+        .btn-login { background: #001a72; color: #fff; }
+        .btn-join { border: 1px solid #001a72; color: #001a72; background: #fff; }
+        .btn-mypage { border: 1px solid #001a72; color: #001a72; background: #fff; }
+        .btn-logout { background: #ff4757; color: #fff; }
+
+        .user-welcome-text { font-size: 14px; color: #555; margin-right: 10px; }
+    </style>
+</div>
+</html>

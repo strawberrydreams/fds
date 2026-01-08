@@ -5,37 +5,54 @@
     <title>가입 완료 | 안심거래 서비스</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f9; margin: 0; }
-        .navbar { background: white; padding: 15px 50px; display: flex; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .navbar-brand { font-size: 24px; font-weight: bold; color: #4A90E2; text-decoration: none; }
-        .result-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+
+        .result-container { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 70px); }
         .result-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 450px; text-align: center; }
+
         .info-box { text-align: left; background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; font-size: 14px; }
         .info-item { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .pw-text { color: #e74c3c; word-break: break-all; font-family: monospace; }
-        .btn-home { display: inline-block; width: 100%; padding: 12px; background: #4A90E2; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .info-item strong { color: #555; }
+
+        .pw-text { color: #e74c3c; word-break: break-all; font-family: monospace; font-size: 12px; }
+
+        .btn-home {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            background: #001a72;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+        .btn-home:hover { background: #0033cc; }
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <a href="/" class="navbar-brand">안심거래</a>
-</nav>
+<div th:replace="~{thymeleaf/fragments/header :: mainHeader}"></div>
 
 <div class="result-container">
     <div class="result-card">
-        <h2 style="color: #2ecc71;">🎉 회원가입 완료!</h2>
+        <h2 style="color: #2ecc71; margin-top: 0;">🎉 회원가입 완료!</h2>
         <p>환영합니다, <strong th:text="${memberDTO.name}">사용자</strong>님!</p>
 
         <div class="info-box">
             <div class="info-item"><strong>아이디:</strong> <span th:text="${memberDTO.userId}"></span></div>
             <div class="info-item"><strong>이메일:</strong> <span th:text="${memberDTO.userEmail}"></span></div>
             <div class="info-item">
-                <strong>암호화된 비번:</strong><br>
+                <strong>암호화된 비밀번호(BCrypt):</strong><br>
                 <span class="pw-text" th:text="${memberDTO.userPw}"></span>
             </div>
         </div>
 
-        <a href="/" class="btn-home">홈으로 돌아가기</a>
+        <p style="font-size: 13px; color: #888; margin-bottom: 20px;">
+            방금 가입하신 정보로 로그인이 가능합니다.
+        </p>
+
+        <a th:href="@{/login}" class="btn-home">로그인하러 가기</a>
     </div>
 </div>
 

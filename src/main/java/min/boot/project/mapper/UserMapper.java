@@ -7,8 +7,8 @@ import org.apache.ibatis.annotations.*;
 public interface UserMapper {
 
     // 1. 회원가입 저장
-    @Insert("INSERT INTO USERS (USER_ID, NAME, USER_PW, USER_EMAIL, BIRTH, GENDER) " +
-            "VALUES (#{userId}, #{name}, #{userPw}, #{userEmail}, #{birth}, #{gender})")
+    @Insert("INSERT INTO USERS (USER_ID, NAME, USER_PW, USER_EMAIL, BIRTH, GENDER, ROLE) " +
+            "VALUES (#{userId}, #{name}, #{userPw}, #{userEmail}, #{birth}, #{gender}, 'USER')")
     void save(MemberDTO memberDTO);
 
     // 2. 로그인 및 정보 조회 (아이디로 찾기)

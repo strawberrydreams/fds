@@ -1,18 +1,34 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>계정 찾기 | 안심거래</title>
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f9; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f9; margin: 0; padding: 0; }
 
-        .find-container { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        .logo { text-align: center; font-size: 24px; font-weight: bold; color: #4A90E2; margin-bottom: 30px; cursor: pointer; text-decoration: none; display: block; }
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 70px); /* 상단바 높이 제외 */
+            padding: 40px 0;
+        }
+
+        .find-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .find-title { text-align: center; font-size: 24px; font-weight: bold; color: #001a72; margin-bottom: 30px; }
 
         /* 탭 스타일 */
         .tab-menu { display: flex; margin-bottom: 30px; border-bottom: 2px solid #eee; }
         .tab-btn { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #888; transition: 0.3s; }
-        .tab-btn.active { color: #4A90E2; border-bottom: 2px solid #4A90E2; margin-bottom: -2px; }
+        .tab-btn.active { color: #001a72; border-bottom: 2px solid #001a72; margin-bottom: -2px; }
 
         .find-form { display: none; }
         .find-form.active { display: block; }
@@ -20,65 +36,82 @@
         .form-group { margin-bottom: 20px; }
         label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; }
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        input:focus { outline: none; border-color: #001a72; box-shadow: 0 0 5px rgba(0, 26, 114, 0.1); }
 
-        .btn-submit { width: 100%; padding: 14px; background-color: #4A90E2; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-submit:hover { background-color: #357ABD; }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #001a72;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .btn-submit:hover { background-color: #0033cc; }
 
         .link-footer { text-align: center; margin-top: 20px; font-size: 14px; }
-        .link-footer a { color: #888; text-decoration: none; }
-        .link-footer a:hover { text-decoration: underline; }
+        .link-footer a { color: #888; text-decoration: none; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
+        .link-footer a:hover { color: #333; border-color: #333; }
     </style>
 </head>
 <body>
 
-<div class="find-container">
-    <a th:href="@{/}" class="logo">안심거래</a>
+<div th:replace="~{thymeleaf/fragments/header :: mainHeader}"></div>
 
-    <div class="tab-menu">
-        <div class="tab-btn active" onclick="openTab('findId')">아이디 찾기</div>
-        <div class="tab-btn" onclick="openTab('resetPw')">비밀번호 찾기</div>
-    </div>
+<div class="main-content">
+    <div class="find-container">
+        <div class="find-title">계정 찾기</div>
 
-    <div id="findId" class="find-form active">
-        <form th:action="@{/find-id}" method="post">
-            <div class="form-group">
-                <label>이름</label>
-                <input type="text" name="name" placeholder="가입 시 입력한 이름 입력" required>
-            </div>
-            <div class="form-group">
-                <label>이메일 주소</label>
-                <input type="email" name="userEmail" placeholder="가입 시 등록한 이메일 입력" required>
-            </div>
-            <button type="submit" class="btn-submit">아이디 찾기</button>
-        </form>
-    </div>
+        <div class="tab-menu">
+            <div class="tab-btn active" onclick="openTab('findId')">아이디 찾기</div>
+            <div class="tab-btn" onclick="openTab('resetPw')">비밀번호 찾기</div>
+        </div>
 
-    <div id="resetPw" class="find-form">
-        <form id="pwFindForm">
-            <div class="form-group">
-                <label>아이디</label>
-                <input type="text" id="findPwId" name="userId" placeholder="아이디를 입력하세요" required>
-            </div>
-            <div class="form-group">
-                <label>이메일 주소</label>
-                <input type="email" id="findPwEmail" name="userEmail" placeholder="가입 시 등록한 이메일 입력" required>
-            </div>
-            <button type="button" class="btn-submit" onclick="checkUserForPw()">다음 (정보 확인)</button>
-        </form>
+        <div id="findId" class="find-form active">
+            <form th:action="@{/find-id}" method="post">
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" name="name" placeholder="가입 시 입력한 이름 입력" required>
+                </div>
+                <div class="form-group">
+                    <label>이메일 주소</label>
+                    <input type="email" name="userEmail" placeholder="가입 시 등록한 이메일 입력" required>
+                </div>
+                <button type="submit" class="btn-submit">아이디 찾기</button>
+            </form>
+        </div>
 
-        <form id="newPwForm" th:action="@{/reset-password}" method="post" style="display: none; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 20px;">
-            <input type="hidden" id="hiddenId" name="userId">
-            <input type="hidden" id="hiddenEmail" name="userEmail">
-            <div class="form-group">
-                <label style="color: #4A90E2; font-weight: bold;">본인 확인 완료! 새 비밀번호를 입력하세요.</label>
-                <input type="password" name="newPw" placeholder="새 비밀번호 입력" required>
-            </div>
-            <button type="submit" class="btn-submit">비밀번호 변경 완료</button>
-        </form>
-    </div>
+        <div id="resetPw" class="find-form">
+            <form id="pwFindForm">
+                <div class="form-group">
+                    <label>아이디</label>
+                    <input type="text" id="findPwId" name="userId" placeholder="아이디를 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label>이메일 주소</label>
+                    <input type="email" id="findPwEmail" name="userEmail" placeholder="가입 시 등록한 이메일 입력" required>
+                </div>
+                <button type="button" class="btn-submit" onclick="checkUserForPw()">다음 (정보 확인)</button>
+            </form>
 
-    <div class="link-footer">
-        <a th:href="@{/login}">로그인으로 돌아가기</a>
+            <form id="newPwForm" th:action="@{/reset-password}" method="post" style="display: none; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 20px;">
+                <input type="hidden" id="hiddenId" name="userId">
+                <input type="hidden" id="hiddenEmail" name="userEmail">
+                <div class="form-group">
+                    <label style="color: #001a72; font-weight: bold;">본인 확인 완료! 새 비밀번호를 입력하세요.</label>
+                    <input type="password" name="newPw" placeholder="새 비밀번호 입력" required>
+                </div>
+                <button type="submit" class="btn-submit">비밀번호 변경 완료</button>
+            </form>
+        </div>
+
+        <div class="link-footer">
+            <a th:href="@{/login}">로그인으로 돌아가기</a>
+        </div>
     </div>
 </div>
 
@@ -105,16 +138,12 @@
             return;
         }
 
-        // 서버의 /check-user 경로 호출
         fetch(`/check-user?userId=${userId}&userEmail=${userEmail}`)
             .then(response => response.json())
             .then(isExist => {
                 if (isExist) {
-                    // 유저 존재 시: 확인 폼 숨기고 새 비번 폼 표시
                     document.getElementById('pwFindForm').style.display = 'none';
                     document.getElementById('newPwForm').style.display = 'block';
-
-                    // Hidden 필드에 값 복사 (비번 변경 시 필요)
                     document.getElementById('hiddenId').value = userId;
                     document.getElementById('hiddenEmail').value = userEmail;
                 } else {
@@ -127,7 +156,6 @@
             });
     }
 
-    // 서버 메시지(RedirectAttributes) 알림창
     /*[# th:if="${msg}"]*/
     alert([[${msg}]]);
     /*[/]*/

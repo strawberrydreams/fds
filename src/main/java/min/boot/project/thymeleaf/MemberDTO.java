@@ -9,5 +9,5 @@ public class MemberDTO {
     private String userEmail;
     private String gender;
     private String birth;
-    private String role; // 추가: 'USER' 또는 'ADMIN' 저장
+    private String role; // 'USER' 또는 'ADMIN' 저장됨
 }

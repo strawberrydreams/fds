@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>마이페이지 | 안심거래 뱅킹</title>
@@ -14,8 +14,7 @@
         }
         body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg-color); color: #333; }
 
-        .navbar { background: #fff; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .logo { font-size: 22px; font-weight: bold; color: var(--primary-color); text-decoration: none; }
+        /* 기존 .navbar 스타일은 삭제 (공통 헤더에서 가져옴) */
 
         .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
 
@@ -76,14 +75,7 @@
 </head>
 <body>
 
-<header class="navbar">
-    <a th:href="@{/}" class="logo">안심거래 뱅킹</a>
-    <div class="nav-right">
-        <form th:action="@{/logout}" method="post">
-            <button type="submit" style="background:none; border:none; color:#666; cursor:pointer; font-weight:bold;">로그아웃</button>
-        </form>
-    </div>
-</header>
+<div th:replace="~{thymeleaf/fragments/header :: mainHeader}"></div>
 
 <div class="container">
     <section class="user-welcome">
