@@ -27,25 +27,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // 개발 단계에서는 disable 처리 (로그인 튕김 방지)
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 공통 접근 허용 (로그인 없이 접근 가능)
+                        // [중요] 계정 찾기 관련 모든 경로를 허용 목록에 추가
                         .requestMatchers(
-                                "/", "/login", "/join", "/find-account", "/check-user", "/reset-password",
-                                "/danger/**",   // 사기 통계 메뉴 전체 허용
-                                "/support/**",  // 고객지원 하위 경로
-                                "/support"       // 고객지원 메인 경로
+                                "/", "/login", "/join",
+                                "/find-account", "/find-id", "/reset-password", "/check-user",
+                                "/danger/**", "/support/**", "/support"
                         ).permitAll()
 
-                        // 2. 정적 리소스 및 파비콘 허용
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-
-                        // 3. 마이페이지 및 정보 수정 (반드시 로그인 필요)
-                        .requestMatchers("/mypage/**").authenticated()
-
-                        // 4. 관리자 권한
+                        .requestMatchers("/mypage/**").authenticated() // 마이페이지는 로그인 필수
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

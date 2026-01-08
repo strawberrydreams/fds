@@ -53,15 +53,20 @@
         /* 폼 요소 스타일 */
         .form-group { margin-bottom: 20px; }
         label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; }
-        input[type="text"], input[type="password"], input[type="email"], input[type="date"] {
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="date"],
+        select {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 15px;
+            background-color: #fff;
         }
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #001a72;
             box-shadow: 0 0 5px rgba(0, 26, 114, 0.2);
@@ -83,6 +88,13 @@
             margin-top: 10px;
         }
         .btn-submit:hover { background-color: #0033cc; }
+
+        /* 도움말 텍스트 */
+        .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -105,7 +117,7 @@
 
             <div class="form-group">
                 <label>이름</label>
-                <input type="text" th:field="*{name}" placeholder="이름을 입력하세요" />
+                <input type="text" th:field="*{name}" placeholder="이름을 입력하세요" required />
             </div>
 
             <div class="form-group">
@@ -115,8 +127,30 @@
 
             <div class="form-group">
                 <label>이메일</label>
-                <input type="email" th:field="*{userEmail}" placeholder="example@mail.com" />
+                <input type="email" th:field="*{userEmail}" placeholder="example@mail.com" required />
             </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+            <div class="form-group">
+                <label>비밀번호 찾기 질문</label>
+                <select th:field="*{pwQuestion}" required>
+                    <option value="" disabled selected>질문을 선택해주세요</option>
+                    <option value="기억에 남는 추억의 장소는?">기억에 남는 추억의 장소는?</option>
+                    <option value="가장 존경하는 인물은?">가장 존경하는 인물은?</option>
+                    <option value="처음으로 키운 반려동물의 이름은?">처음으로 키운 반려동물의 이름은?</option>
+                    <option value="나의 보물 1호는?">나의 보물 1호는?</option>
+                    <option value="좌우명 또는 좋아하는 격언은?">좌우명 또는 좋아하는 격언은?</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>비밀번호 찾기 답변</label>
+                <input type="text" th:field="*{pwAnswer}" placeholder="답변을 입력하세요" required />
+                <p class="help-text">* 비밀번호를 잊어버렸을 때 본인 확인을 위해 사용됩니다.</p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
 
             <div class="form-group">
                 <label>생년월일</label>

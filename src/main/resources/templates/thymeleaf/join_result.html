@@ -5,27 +5,22 @@
     <title>가입 완료 | 안심거래 서비스</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f9; margin: 0; }
-
         .result-container { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 70px); }
         .result-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 450px; text-align: center; }
 
-        .info-box { text-align: left; background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; font-size: 14px; }
-        .info-item { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .info-item strong { color: #555; }
+        .info-box { text-align: left; background: #f8f9fa; padding: 25px; border-radius: 8px; margin: 25px 0; font-size: 14px; border: 1px solid #eef0f2; }
+        .info-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .info-item:last-child { border-bottom: none; }
+        .info-item strong { color: #555; display: inline-block; width: 120px; }
+        .info-item span { color: #333; font-weight: 500; }
 
-        .pw-text { color: #e74c3c; word-break: break-all; font-family: monospace; font-size: 12px; }
+        /* 보안 답변 강조 스타일 */
+        .answer-text { color: #001a72; font-weight: bold !important; }
 
         .btn-home {
-            display: inline-block;
-            width: 100%;
-            padding: 14px;
-            background: #001a72;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            box-sizing: border-box;
-            transition: background 0.2s;
+            display: inline-block; width: 100%; padding: 14px; background: #001a72;
+            color: white; text-decoration: none; border-radius: 6px; font-weight: bold;
+            box-sizing: border-box; transition: background 0.2s;
         }
         .btn-home:hover { background: #0033cc; }
     </style>
@@ -36,20 +31,29 @@
 
 <div class="result-container">
     <div class="result-card">
-        <h2 style="color: #2ecc71; margin-top: 0;">🎉 회원가입 완료!</h2>
-        <p>환영합니다, <strong th:text="${memberDTO.name}">사용자</strong>님!</p>
+        <div style="font-size: 50px; margin-bottom: 10px;">🎉</div>
+        <h2 style="color: #2ecc71; margin-top: 0;">회원가입 완료!</h2>
+        <p><strong th:text="${memberDTO.name}">사용자</strong>님, 안심거래의 회원이 되신 것을 환영합니다.</p>
 
         <div class="info-box">
-            <div class="info-item"><strong>아이디:</strong> <span th:text="${memberDTO.userId}"></span></div>
-            <div class="info-item"><strong>이메일:</strong> <span th:text="${memberDTO.userEmail}"></span></div>
+            <div class="info-item"><strong>아이디</strong> <span th:text="${memberDTO.userId}"></span></div>
+            <div class="info-item"><strong>이메일</strong> <span th:text="${memberDTO.userEmail}"></span></div>
+            <div class="info-item"><strong>생년월일</strong> <span th:text="${memberDTO.birth}"></span></div>
+
+            <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
+
+            <div class="info-item" style="border-bottom: none;">
+                <strong style="display: block; width: 100%; margin-bottom: 5px;">본인확인 질문</strong>
+                <span th:text="${memberDTO.pwQuestion}" style="color: #888; font-size: 13px;"></span>
+            </div>
             <div class="info-item">
-                <strong>암호화된 비밀번호(BCrypt):</strong><br>
-                <span class="pw-text" th:text="${memberDTO.userPw}"></span>
+                <strong>본인확인 답변</strong>
+                <span class="answer-text" th:text="${memberDTO.pwAnswer}"></span>
             </div>
         </div>
 
-        <p style="font-size: 13px; color: #888; margin-bottom: 20px;">
-            방금 가입하신 정보로 로그인이 가능합니다.
+        <p style="font-size: 13px; color: #e67e22; margin-bottom: 25px; font-weight: 500;">
+            본인 확인 질문과 답변은 추후 비밀번호 재설정 시 반드시 일치해야 합니다.
         </p>
 
         <a th:href="@{/login}" class="btn-home">로그인하러 가기</a>
