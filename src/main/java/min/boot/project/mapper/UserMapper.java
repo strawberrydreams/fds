@@ -8,9 +8,9 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
 
-    // 1. 회원가입 저장 (관리자 생성을 위해 ROLE을 'ADMIN'으로 임시 변경)
+    // 1. 회원가입 저장 (정상 복구: 이제 가입하는 사람은 'USER' 권한을 가집니다)
     @Insert("INSERT INTO USERS (USER_ID, NAME, USER_PW, USER_EMAIL, BIRTH, GENDER, ROLE, PW_QUESTION, PW_ANSWER) " +
-            "VALUES (#{userId}, #{name}, #{userPw}, #{userEmail}, #{birth}, #{gender}, 'ADMIN', #{pwQuestion}, #{pwAnswer})")
+            "VALUES (#{userId}, #{name}, #{userPw}, #{userEmail}, #{birth}, #{gender}, 'USER', #{pwQuestion}, #{pwAnswer})")
     void save(MemberDTO memberDTO);
 
     // 2. 단일 회원 조회 (아이디 기반)

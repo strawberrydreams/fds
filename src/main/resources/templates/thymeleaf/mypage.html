@@ -14,8 +14,6 @@
         }
         body { font-family: 'Pretendard', sans-serif; margin: 0; background-color: var(--bg-color); color: #333; }
 
-        /* 기존 .navbar 스타일은 삭제 (공통 헤더에서 가져옴) */
-
         .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
 
         .user-welcome { margin-bottom: 30px; }
@@ -39,9 +37,6 @@
             text-align: center; flex: 1;
         }
         .btn-action:hover { background: rgba(255,255,255,0.3); }
-
-        /* 통계 섹션 더미 */
-        .stat-placeholder { background: #f8f9fa; border: 1px dashed #ccc; border-radius: 12px; height: 120px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px; }
 
         /* 리스트 스타일 */
         .transaction-list { list-style: none; padding: 0; }
@@ -71,6 +66,13 @@
 
         /* 배지 스타일 */
         .badge { background: #e8f5e9; color: var(--safe-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+
+        /* [추가] 탈퇴 섹션 스타일 */
+        .withdraw-section { margin-top: 10px; padding: 10px; text-align: right; }
+        .btn-withdraw-link { font-size: 12px; color: #a0aec0; text-decoration: underline; transition: 0.2s; cursor: pointer; }
+        .btn-withdraw-link:hover { color: var(--accent-color); }
+
+        .stat-placeholder { background: #f8f9fa; border: 1px dashed #ccc; border-radius: 12px; height: 120px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -154,6 +156,10 @@
             <div class="card" style="background:#fff9db; border:1px solid #ffe066;">
                 <p style="margin:0; font-size:13px; font-weight:bold; color:#f08c00;">⚠️ 보안 주의보</p>
                 <p style="margin:5px 0 0 0; font-size:12px; color:#856404;">최근 중고거래 사기가 급증하고 있습니다. 거래 전 꼭 계좌를 조회하세요.</p>
+            </div>
+
+            <div class="withdraw-section">
+                <a th:href="@{/withdraw}" class="btn-withdraw-link">안심거래 서비스를 탈퇴하시겠습니까?</a>
             </div>
         </div>
     </div>

@@ -34,6 +34,10 @@
                 </ul>
             </div>
             <div class="nav-item"><a th:href="@{/support}">고객지원</a></div>
+
+            <div class="nav-item admin-menu" sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/users}">회원관리</a>
+            </div>
         </div>
 
         <div class="nav-auth">
@@ -43,7 +47,7 @@
             </th:block>
 
             <th:block sec:authorize="isAuthenticated()">
-                <span class="user-welcome-text"><strong th:text="${#authentication.name}">사용자</strong>님</span>
+                <span class="user-welcome-text">환영합니다 <strong th:text="${#authentication.name}">사용자</strong>님</span>
                 <a th:href="@{/mypage}" class="auth-btn btn-mypage">마이페이지</a>
                 <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
                     <button type="submit" class="auth-btn btn-logout">로그아웃</button>
@@ -59,14 +63,24 @@
         .logo-icon { width: 25px; height: 25px; background: #001a72; border-radius: 50%; margin-right: 10px; }
 
         .nav-menu { display: flex; gap: 40px; height: 100%; align-items: center; }
-        .nav-item { position: relative; height: 100%; display: flex; align-items: center; cursor: pointer; font-weight: 500; font-size: 15px; color: #333; }
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; cursor: pointer; font-weight: 500; font-size: 15px; color: #333; transition: 0.2s; }
+        .nav-item a { text-decoration: none; color: inherit; display: flex; align-items: center; height: 100%; }
 
+        /* 호버 시 텍스트 색상 변경 (전체 공통) */
+        .nav-item:hover { color: #001a72; }
+
+        /* 드롭다운 메뉴 */
         .dropdown { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid #e1e4e8; min-width: 160px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 10px 0; list-style: none; }
         .dropdown li { padding: 12px 20px; font-size: 14px; white-space: nowrap; text-align: left; }
         .dropdown li:hover { background-color: #f8f9fa; }
-        .dropdown li a { text-decoration: none; color: inherit; display: block; }
+        .dropdown li a { text-decoration: none; color: inherit; display: block; height: auto; }
         .nav-item:hover .dropdown { display: block; }
 
+        /* 관리자 메뉴 전용 강조 (텍스트 색상만 빨간색으로 포인트) */
+        .admin-menu a { color: #ff4757 !important; font-weight: bold; }
+        .admin-menu:hover a { color: #d63031 !important; }
+
+        /* 우측 인증 버튼 */
         .nav-auth { display: flex; align-items: center; gap: 10px; }
         .auth-btn { display: inline-flex; align-items: center; justify-content: center; width: 100px; height: 38px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; box-sizing: border-box; border: none; transition: 0.2s; text-decoration: none; }
 

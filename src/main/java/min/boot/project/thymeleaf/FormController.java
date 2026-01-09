@@ -11,6 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 @RequiredArgsConstructor
 public class FormController {
@@ -94,7 +96,6 @@ public class FormController {
     // 아이디 찾기 (이름, 이메일 + 생년월일 추가)
     @PostMapping("/find-id")
     public String findId(@RequestParam String name, @RequestParam String userEmail, @RequestParam String birth, RedirectAttributes rttr) {
-        // 3단 교차 검증 적용
         String foundId = userMapper.findIdByNameAndEmailAndBirth(name, userEmail, birth);
         rttr.addFlashAttribute("msg", foundId != null ? "아이디: [" + foundId + "]" : "일치하는 정보가 없습니다.");
         return "redirect:/find-account";
@@ -119,7 +120,6 @@ public class FormController {
                 rttr.addFlashAttribute("msg", "모든 정보를 정확히 입력해주세요.");
                 return "redirect:/find-account";
             }
-            // 5단 교차 검증 적용: 아이디 + 이메일 + 생년월일 + 질문 + 답변
             if (userMapper.checkUserExists(userId, userEmail, birth, pwQuestion, pwAnswer) == 0) {
                 rttr.addFlashAttribute("msg", "본인 확인 정보가 일치하지 않습니다.");
                 return "redirect:/find-account";
@@ -132,7 +132,7 @@ public class FormController {
         return (auth != null && auth.isAuthenticated()) ? "redirect:/mypage" : "redirect:/login";
     }
 
-    // 비동기 본인 확인 (JS Fetch용 - 생년월일 추가)
+    // [7] 비동기 본인 확인 (JS Fetch용)
     @GetMapping("/check-user")
     @ResponseBody
     public boolean checkUser(@RequestParam String userId,
@@ -140,8 +140,37 @@ public class FormController {
                              @RequestParam String birth,
                              @RequestParam String pwQuestion,
                              @RequestParam String pwAnswer) {
-        // 생년월일까지 포함하여 5가지 정보 대조
         return userMapper.checkUserExists(userId, userEmail, birth, pwQuestion, pwAnswer) > 0;
+    }
+
+    // [8] 회원 탈퇴 페이지 이동
+    @GetMapping("/withdraw")
+    public String withdrawPage() {
+        return "thymeleaf/withdraw";
+    }
+
+    // [9] 회원 탈퇴 처리
+    @PostMapping("/withdraw")
+    public String withdraw(@RequestParam String userPw,
+                           @AuthenticationPrincipal User user,
+                           HttpSession session,
+                           RedirectAttributes rttr) {
+
+        if (user == null) return "redirect:/login";
+
+        String userId = user.getUsername();
+        MemberDTO member = userMapper.findByUserId(userId);
+
+        if (member != null && passwordEncoder.matches(userPw, member.getUserPw())) {
+            userMapper.deleteUser(userId); // DB 데이터 삭제
+            session.invalidate(); // 세션 무효화 및 로그아웃 처리
+
+            rttr.addFlashAttribute("msg", "회원 탈퇴가 완료되었습니다. 이용해 주셔서 감사합니다.");
+            return "redirect:/";
+        } else {
+            rttr.addFlashAttribute("msg", "비밀번호가 일치하지 않습니다.");
+            return "redirect:/withdraw";
+        }
     }
 
     @GetMapping("/support")
