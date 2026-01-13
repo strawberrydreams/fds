@@ -1,3 +1,13 @@
+# macOS system metadata
+.DS_Store
+
+# Environment variable
+.env
+
+# IDE personal settings
+.idea
+.vscode
+
 # Compiled class file
 *.class
 
