@@ -119,9 +119,7 @@
                 </td>
                 <td th:text="${user.name}">홍길동</td>
                 <td th:text="${user.userEmail}">admin@example.com</td>
-                <td>
-                    <span th:text="${user.birth != null ? #strings.substring(user.birth, 0, 10) : '-'}">2000-01-01</span>
-                </td>
+                <td th:text="${user.birth != null ? (#strings.length(user.birth) > 10 ? #strings.substring(user.birth, 0, 10) : user.birth) : '-'}"></td>
                 <td>
                         <span th:classappend="${user.role == 'ADMIN'} ? 'role-badge role-admin' : 'role-badge role-user'"
                               th:text="${user.role}">USER</span>

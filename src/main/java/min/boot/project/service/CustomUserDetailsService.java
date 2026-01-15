@@ -30,12 +30,22 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
         }
 
-        // DB에 저장된 ROLE 값을 읽어와서 권한 부여
-        // .roles() 메서드는 자동으로 "ROLE_"을 붙여줍니다 (ADMIN -> ROLE_ADMIN)
+        // 권한 리스트 생성
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        String role = member.getRole();
+        if (role != null) {
+            // DB에 "ROLE_"이 이미 붙어있든 아니든, 최종적으로 "ROLE_ADMIN" 형태가 되도록 보정
+            if (!role.startsWith("ROLE_")) {
+                role = "ROLE_" + role;
+            }
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
+
         return User.builder()
                 .username(member.getUserId())
                 .password(member.getUserPw())
-                .roles(member.getRole())
+                .authorities(authorities) // .roles() 대신 .authorities() 사용
                 .build();
     }
 }
