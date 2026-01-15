@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/FREEPDB1
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: scott
+    password: tiger
+
+  jpa:
+    hibernate:
+      ddl-auto: update      # 테이블 자동 생성/갱신 설정
+    show-sql: true          # SQL 로그 출력
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect  # 오라클 방언 설정
+        format_sql: true    # SQL을 읽기 좋게 포맷팅
+    generate-ddl: true      # DDL 생성 활성화

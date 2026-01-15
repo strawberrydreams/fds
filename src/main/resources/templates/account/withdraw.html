@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>계좌 인출 - FDS BANK</title>
+
+    <th:block th:replace="~{index :: menuStyle}"></th:block>
+
+    <style>
+        .container { max-width: 600px; margin: 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #1a1a1a; text-align: center; border-bottom: 3px solid #dc3545; padding-bottom: 15px; margin-bottom: 25px; }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #4b4b4b; }
+
+        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        select:focus, input:focus { border-color: #dc3545; outline: none; box-shadow: 0 0 5px rgba(220,53,69,0.1); }
+
+        .btn-withdraw { width: 100%; padding: 15px; background-color: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; }
+        .btn-withdraw:hover { background-color: #c82333; transform: translateY(-2px); }
+
+        /* 인출 내역 테이블 스타일 */
+        .history-section { margin-top: 50px; background: #fdfdfd; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
+        .history-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; display: flex; align-items: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #f8f9fa; padding: 10px; border-bottom: 2px solid #dc3545; color: #555; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; color: #666; }
+        .amount-minus { color: #dc3545; font-weight: bold; }
+
+        .error-box { color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; border: 1px solid #f5c6cb; font-weight: bold; animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        .footer-links { display: flex; justify-content: space-between; margin-top: 25px; }
+        .footer-links a { color: #999; text-decoration: none; font-size: 14px; }
+        .footer-links a:hover { color: #dc3545; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h2>💸 계좌 인출</h2>
+
+    <div class="error-box" th:if="${error}">
+        ⚠️ <span th:text="${error}">에러 메시지</span>
+    </div>
+
+    <form th:action="@{/account/withdraw}" method="post">
+        <div class="form-group">
+            <label>인출할 계좌 선택</label>
+            <select name="accountNumber" required>
+                <option value="">-- 인출할 계좌를 선택하세요 --</option>
+                <option th:each="acc : ${accounts}"
+                        th:value="${acc.accountNumber}"
+                        th:selected="${acc.accountNumber == accountNumber}"
+                        th:text="|${acc.accountNumber} (잔액: ${#numbers.formatInteger(acc.balance, 0, 'COMMA')}원)|">
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>인출 금액 (원)</label>
+            <input type="number" name="amount" th:value="${amount}" min="1" placeholder="인출할 금액을 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+            <label>계좌 비밀번호 (4자리)</label>
+            <input type="password"
+                   name="password"
+                   maxlength="4"
+                   pattern="\d{4}"
+                   inputmode="numeric"
+                   autocomplete="one-time-code"
+                   placeholder="비밀번호 4자리를 입력하세요"
+                   required>
+            <p style="font-size: 11px; color: #999; margin-top: 5px;">
+                * 개인정보 보호를 위해 비밀번호는 암호화(BCrypt) 처리됩니다.
+            </p>
+        </div>
+
+        <button type="submit" class="btn-withdraw">인출 완료</button>
+    </form>
+
+    <div class="history-section">
+        <div class="history-title">📜 최근 인출 내역</div>
+        <table>
+            <thead>
+            <tr>
+                <th>날짜</th>
+                <th>상세 내역</th>
+                <th>금액</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tx : ${withdrawHistory}">
+                <td th:text="${#temporals.format(tx.createdAt, 'MM-dd HH:mm')}">날짜</td>
+                <td th:text="${tx.description}">ATM 현금 인출</td>
+                <td style="color: #e74c3c; font-weight: bold;" th:text="'- ' + ${#numbers.formatInteger(tx.amount, 0, 'COMMA')} + '원'">- 1,000원</td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(withdrawHistory)}">
+                <td colspan="3" style="padding: 30px; color: #bbb; text-align: center;">최근 인출 기록이 없습니다.</td>
+            </tr>
+
+            <tr th:if="${not #lists.isEmpty(withdrawHistory)}" style="background-color: #fff5f5; border-top: 2px solid #e74c3c;">
+                <td colspan="2" style="text-align: right; font-weight: bold; padding: 15px; color: #555;">
+                    💸 나의 누적 인출 총액
+                </td>
+                <td style="font-size: 16px; font-weight: 800; color: #e74c3c; padding: 15px; text-align: center;">
+                    <span th:text="${totalWithdrawAmount != null ? #numbers.formatInteger(totalWithdrawAmount, 3, 'COMMA') : '0'}">0</span>원
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>약관 동의 - FDS BANK</title>
+    <th:block th:replace="~{index :: menuStyle}"></th:block>
+    <style>
+        .container { max-width: 600px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #1a1a1a; text-align: center; border-bottom: 3px solid #007bff; padding-bottom: 15px; margin-bottom: 30px; }
+
+        .terms-section { margin-bottom: 25px; }
+        .terms-title { font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .terms-box {
+            height: 150px; overflow-y: scroll; background: #f8f9fa; border: 1px solid #eee;
+            padding: 15px; font-size: 13px; color: #666; line-height: 1.6; border-radius: 8px;
+        }
+
+        .check-group { margin-top: 10px; text-align: right; }
+        .check-group label { font-size: 14px; cursor: pointer; color: #333; }
+
+        .btn-next {
+            width: 100%; padding: 15px; background-color: #007bff; color: white;
+            border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold;
+            transition: 0.3s; margin-top: 20px;
+        }
+        .btn-next:hover { background-color: #0056b3; transform: translateY(-2px); }
+
+        .error-msg { color: #dc3545; font-size: 14px; margin-bottom: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h2>📜 약관 동의</h2>
+
+    <div th:if="${error}" class="error-msg" th:text="${error}"></div>
+
+    <form th:action="@{/account/ocr}" method="post">
+        <div class="terms-section">
+            <div class="terms-title">
+                <span>[필수] 개인정보 수집 및 이용 동의</span>
+            </div>
+            <div class="terms-box">
+                제 1 조 (목적)<br>
+                본 약관은 FDS BANK가 제공하는 금융 서비스의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다...
+                (중략)
+            </div>
+            <div class="check-group">
+                <label><input type="checkbox" name="agree" required> 위 약관에 동의합니다.</label>
+            </div>
+        </div>
+
+        <div class="terms-section">
+            <div class="terms-title">
+                <span>[필수] 고유식별정보 처리 동의</span>
+            </div>
+            <div class="terms-box">
+                회사는 계좌 개설 및 본인 확인을 위해 주민등록번호, 운전면허번호 등 고유식별정보를 수집 및 이용하며, 이는 관련 법령에 의거하여 엄격히 관리됩니다...
+            </div>
+            <div class="check-group">
+                <label><input type="checkbox" required> 위 약관에 동의합니다.</label>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-next">다음 (본인 인증)</button>
+    </form>
+</div>
+</body>
+</html>

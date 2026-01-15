@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>카드 이용 내역 - FDS BANK</title>
+    <th:block th:replace="~{index :: menuStyle}"></th:block>
+    <style>
+        .container { max-width: 900px; margin: 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #1a1a1a; margin-bottom: 30px; border-bottom: 3px solid #007bff; padding-bottom: 15px; }
+
+        .history-card { display: flex; align-items: center; padding: 20px; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .history-card:hover { background-color: #f8f9fa; }
+
+        .date-box { width: 80px; text-align: center; color: #666; font-size: 13px; border-right: 1px solid #eee; margin-right: 25px; }
+        .merchant-info { flex-grow: 1; }
+        .merchant-name { font-weight: bold; font-size: 16px; color: #333; display: block; }
+        .card-info { font-size: 12px; color: #888; }
+
+        .amount-info { text-align: right; }
+        .amount { display: block; font-size: 18px; font-weight: bold; color: #1a1a1a; }
+
+        /* 상태 태그 */
+        .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+        .SUCCESS { background: #e8f5e9; color: #2e7d32; }
+        .FAILED { background: #ffebee; color: #c62828; }
+        .BLOCKED { background: #fff3e0; color: #ef6c00; }
+    </style>
+</head>
+<body>
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h2>🧾 카드 이용 내역</h2>
+
+    <div th:if="${#lists.isEmpty(histories)}" style="text-align: center; padding: 50px; color: #999;">
+        최근 결제 내역이 없습니다.
+    </div>
+
+    <div th:each="tx : ${histories}" class="history-card">
+        <div class="date-box">
+            <span th:text="${#temporals.format(tx.approvedAt, 'MM.dd')}">10.25</span><br>
+            <span th:text="${#temporals.format(tx.approvedAt, 'HH:mm')}" style="font-size: 11px; opacity: 0.7;">14:30</span>
+        </div>
+
+        <div class="merchant-info">
+            <span class="merchant-name" th:text="${tx.merchantName}">스타벅스 가산점</span>
+            <span class="card-info" th:text="${tx.card.cardType + ' (' + tx.card.cardNumber + ')'}">CHECK (0000-****)</span>
+        </div>
+
+        <div class="amount-info">
+            <span class="amount" th:text="${#numbers.formatInteger(tx.amount, 0, 'COMMA')} + '원'">5,500원</span>
+            <span class="status-badge" th:classappend="${tx.status}"
+                  th:text="${tx.status == 'SUCCESS' ? '승인완료' : (tx.status == 'FAILED' ? '거절(잔액부족)' : 'FDS차단')}">승인완료</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

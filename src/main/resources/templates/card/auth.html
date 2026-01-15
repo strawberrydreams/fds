@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>카드 발급 본인인증 - FDS BANK</title>
+    <th:block th:replace="~{index :: menuStyle}"></th:block>
+    <style>
+        .container { max-width: 500px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .camera-box { width: 100%; height: 300px; background: #000; border-radius: 12px; margin: 20px 0; position: relative; overflow: hidden; border: 3px solid #007bff; }
+        #video, #photoPreview { width: 100%; height: 100%; object-fit: cover; }
+        #photoPreview { display: none; background: #fff; }
+        .guide-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 60%; border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 10px; box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5); pointer-events: none; }
+        .btn-capture { width: 70px; height: 70px; background: white; border: 5px solid #007bff; border-radius: 50%; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .status { margin-top: 15px; font-weight: bold; color: #007bff; min-height: 24px; }
+        .loading-spinner { display: none; margin: 10px auto; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 결과 영역 */
+        .result-area { display: none; margin-top: 20px; text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #e9ecef; }
+        .result-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-retry { flex: 1; padding: 12px; background: #eee; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-next { flex: 2; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* [추가] 직접 입력 안내 영역 */
+        .manual-area { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ddd; }
+        .btn-manual { background: none; border: 1px solid #007bff; color: #007bff; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-manual:hover { background: #007bff; color: white; }
+
+        #canvas { display: none; }
+    </style>
+</head>
+<body>
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h3>💳 카드 발급 본인인증</h3>
+    <p id="top-msg" style="font-size: 14px; color: #666;">신분증을 가이드라인에 맞춰 촬영해주세요.</p>
+
+    <div class="camera-box">
+        <video id="video" autoplay playsinline></video>
+        <img id="photoPreview" src="">
+        <div class="guide-line"></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+    <div id="status" class="status">카메라 연결 중...</div>
+    <div id="spinner" class="loading-spinner"></div>
+
+    <button type="button" class="btn-capture" onclick="captureAndAnalyze()" id="captureBtn"></button>
+
+    <div class="manual-area" id="manualArea">
+        <p style="font-size: 13px; color: #999; margin-bottom: 10px;">신분증 인식이 잘 안 되시나요?</p>
+        <button type="button" class="btn-manual" onclick="location.href='/card/apply'">정보 직접 입력하기</button>
+    </div>
+
+    <div id="resultArea" class="result-area">
+        <label style="font-size: 13px; font-weight: bold;">확인된 이름</label>
+        <input type="text" id="resName" class="result-input">
+
+        <label style="font-size: 13px; font-weight: bold;">확인된 생년월일</label>
+        <input type="text" id="resBirth" class="result-input">
+
+        <div class="btn-group">
+            <button type="button" class="btn-retry" onclick="location.reload()">다시 찍기</button>
+            <button type="button" class="btn-next" onclick="goToApply()">이 정보로 신청하기</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const video = document.getElementById('video');
+    const photoPreview = document.getElementById('photoPreview');
+    const status = document.getElementById('status');
+    const spinner = document.getElementById('spinner');
+    const captureBtn = document.getElementById('captureBtn');
+    const resultArea = document.getElementById('resultArea');
+    const manualArea = document.getElementById('manualArea');
+
+    // 카메라 시작
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => { video.srcObject = stream; status.innerText = "촬영 버튼을 눌러주세요."; })
+        .catch(err => { status.innerText = "카메라 에러: " + err; });
+
+    async function captureAndAnalyze() {
+        const canvas = document.getElementById('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const imageData = canvas.toDataURL('image/jpeg');
+        status.innerText = "AI 분석 중...";
+        spinner.style.display = "block";
+        captureBtn.style.display = "none";
+        manualArea.style.display = "none"; // 분석 중에는 안내 숨김
+
+        try {
+            const response = await fetch('/account/ocr-api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ 'imageDate': imageData })
+            });
+            const data = await response.json();
+
+            video.style.display = "none";
+            photoPreview.src = imageData;
+            photoPreview.style.display = "block";
+            spinner.style.display = "none";
+
+            document.getElementById('resName').value = data.name || "";
+            document.getElementById('resBirth').value = data.birth || "";
+            resultArea.style.display = "block";
+            status.innerText = "인식 결과를 확인해주세요.";
+        } catch (err) {
+            alert("인식 실패. 정보를 직접 입력해주세요.");
+            location.href = '/card/apply'; // 실패 시 바로 입력 페이지로 이동 제안
+        }
+    }
+
+    function goToApply() {
+        const name = document.getElementById('resName').value;
+        const birth = document.getElementById('resBirth').value;
+        location.href = `/card/apply?userName=${encodeURIComponent(name)}&userBirth=${encodeURIComponent(birth)}`;
+    }
+</script>
+</body>
+</html>

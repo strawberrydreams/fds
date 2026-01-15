@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="common_head(title)">
+    <meta charset="UTF-8">
+    <title th:text="${title}">FDS BANK</title>
+
+    <style th:fragment="menuStyle">
+        /* 기본 여백 초기화 (공통) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; }
+
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 50px;
+            display: flex;
+            align-items: center;
+            height: 70px;
+            gap: 50px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .main-menu {
+            display: flex;
+            gap: 35px;
+            height: 100%;
+        }
+
+        .menu-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #444;
+            cursor: pointer;
+            font-size: 15px;
+            height: 100%;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            border: 1px solid #d1d5db;
+            min-width: 160px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+            flex-direction: column;
+            padding: 10px 0;
+            border-radius: 8px;
+        }
+
+        .menu-item:hover .dropdown {
+            display: flex;
+        }
+
+        .dropdown a {
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+            font-weight: normal;
+            padding: 12px 20px;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        .dropdown a:hover {
+            background-color: #f3f4f6;
+            color: #007bff;
+        }
+
+        .dropdown::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #d1d5db;
+        }
+
+        .user-section {
+            margin-left: auto;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+<nav th:fragment="menu" class="navbar">
+    <a th:href="@{/}" class="logo">🏦 FDS BANK</a>
+
+    <div class="main-menu">
+        <div class="menu-item">
+            <span>입출금 거래 · 계좌관리</span>
+            <div class="dropdown">
+                <a th:href="@{/account/terms}">계좌 생성</a>
+                <a th:href="@{/account/deposit}">입금</a>
+                <a th:href="@{/account/transfer}">이체</a>
+                <a th:href="@{/account/withdraw}">인출</a>
+                <a th:href="@{/account/list}">계좌 조회</a>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span>카드 관리</span>
+            <div class="dropdown">
+                <a th:href="@{/card/terms}">카드 발급</a>
+                <a th:href="@{/card/list}">카드 정보 및 변경</a>
+                <a th:href="@{/card/history}">카드 내역 확인</a>
+                <a th:href="@{/card/terminate}">카드 해지</a>
+            </div>
+        </div>
+        <div class="menu-item">사기 계좌 신고</div>
+        <div class="menu-item">사기 통계 대시보드</div>
+        <div class="menu-item">고객지원</div>
+    </div>
+    <div class="user-section">
+        👤 <span th:text="${'testuser'}">아이디</span>님 환영합니다
+    </div>
+</nav>
+
+</body>
+</html>
