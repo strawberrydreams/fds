@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>계좌 송금 - FDS BANK</title>
+    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <style>
+        .container { max-width: 650px; margin: 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #1a1a1a; text-align: center; border-bottom: 3px solid #007bff; padding-bottom: 15px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #4b4b4b; }
+        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        select { background-color: #f1f8ff; }
+        .btn-submit { width: 100%; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; }
+        .btn-submit:hover { background-color: #0056b3; transform: translateY(-2px); }
+        .history-section { margin-top: 50px; background: #fdfdfd; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #f8f9fa; padding: 10px; border-bottom: 2px solid #007bff; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        .total-row { background-color: #f0f7ff; border-top: 2px solid #007bff; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h2>💸 계좌 송금</h2>
+
+    <div class="error-box" th:if="${error}" th:text="${error}" style="color:red; margin-bottom:15px;"></div>
+
+    <form th:action="@{/account/transfer}" method="post">
+        <div class="form-group">
+            <label>출금 계좌 선택</label>
+            <select name="fromAccNum" required>
+                <option value="">-- 보낼 계좌를 선택하세요 --</option>
+                <option th:each="acc : ${accounts}"
+                        th:value="${acc.accountNumber}"
+                /* [핵심] 리스트에서 넘어온 fromAccNum과 현재 계좌번호가 같으면 자동 선택 */
+                th:selected="${acc.accountNumber == fromAccNum}"
+                th:text="|${acc.accountNumber} (잔액: ${#numbers.formatInteger(acc.balance, 0, 'COMMA')}원)|">
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>상대방 계좌 번호</label>
+            <input type="text" name="toAccNum" placeholder="받으실 분의 계좌번호를 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+            <label>송금 금액 (원)</label>
+            <input type="number" name="amount" min="1" placeholder="송금할 금액을 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+            <label>계좌 비밀번호 (4자리)</label>
+            <input type="password" name="password" maxlength="4" pattern="\d{4}" inputmode="numeric" required>
+        </div>
+
+        <button type="submit" class="btn-submit"> 송금하기</button>
+    </form>
+
+    <div class="history-section">
+        <div style="font-weight: bold; margin-bottom: 10px;">📜 최근 송금 내역</div>
+        <table>
+            <thead>
+            <tr>
+                <th>날짜</th>
+                <th>상대 계좌</th>
+                <th>금액</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tx : ${transferHistory}">
+                <td th:text="${#temporals.format(tx.createdAt, 'MM-dd HH:mm')}">날짜</td>
+                <td th:text="${tx.targetAccountNumber}">000-0000</td>
+                <td th:text="'- ' + ${#numbers.formatInteger(tx.amount, 0, 'COMMA')} + '원'" style="color:red;">- 1,000원</td>
+            </tr>
+            <tr th:if="${not #lists.isEmpty(transferHistory)}" class="total-row">
+                <td colspan="2" style="text-align: right;">💰 나의 누적 송금 총액</td>
+                <td th:text="${totalTransferAmount != null ? #numbers.formatInteger(totalTransferAmount, 3, 'COMMA') : '0'} + '원'" style="color:#007bff;">0원</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(transferHistory)}">
+                <td colspan="3" style="padding: 20px; color: #999;">송금 기록이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

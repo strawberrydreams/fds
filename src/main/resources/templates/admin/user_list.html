@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{index :: common_head('회원 관리 | 관리자 모드')}"></th:block>
+    <style>
+        :root { --brand-blue: #007bff; } /* 파란색 고정 */
+        body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; margin: 0; }
+        .admin-container { max-width: 1100px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--brand-blue); }
+        .header-flex h2 { color: var(--brand-blue); margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
+        th { background: #f8f9fa; color: #5d6778; font-weight: 600; padding: 15px; text-align: left; font-size: 13px; border-bottom: 2px solid #edf2f7; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 16px 15px; border-bottom: 1px solid #f0f2f5; font-size: 14px; color: #4a5568; vertical-align: middle; }
+        tr:hover td { background-color: #fcfdfe; transition: 0.2s; }
+        .role-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; display: inline-block; letter-spacing: 0.3px; }
+        .role-admin { background: #fff5f5; color: #e74c3c; border: 1px solid #feb2b2; }
+        .role-user { background: #ebf8ff; color: #3182ce; border: 1px solid #bee3f8; }
+        /* 수정 버튼 색상 변경 */
+        .btn-edit { background: #fff; color: var(--brand-blue); padding: 7px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; border: 1px solid var(--brand-blue); transition: 0.2s; }
+        .btn-edit:hover { background: var(--brand-blue); color: #fff; }
+        .text-bold { font-weight: 600; color: #2d3748; }
+        .text-muted { color: #a0aec0; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<nav th:replace="~{index :: menu}"></nav>
+
+<div class="admin-container">
+    <div class="header-flex">
+        <h2>👥 전체 회원 리스트</h2>
+        <span class="text-muted" th:text="${users != null} ? '총 가입자: ' + ${users.size()} + '명' : '가입자 정보 없음'"></span>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>아이디</th>
+                <th>이름</th>
+                <th>연락처(이메일)</th>
+                <th>생년월일</th>
+                <th>권한 등급</th>
+                <th>액션</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td><span class="text-bold" th:text="${user.userId}"></span></td>
+                <td th:text="${user.name}"></td>
+                <td th:text="${user.userEmail}"></td>
+                <td th:text="${user.birth != null ? user.birth : '-'}"></td>
+                <td>
+                    <span th:classappend="${user.role == 'ADMIN'} ? 'role-badge role-admin' : 'role-badge role-user'"
+                          th:text="${user.role}"></span>
+                </td>
+                <td>
+                    <a th:href="@{/admin/users/edit/{id}(id=${user.userId})}" class="btn-edit">수정</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{index :: common_head('계정 찾기 | 안심거래 뱅킹')}"></th:block>
+    <style>
+        :root {
+            --brand-blue: #007bff;
+            --bg-color: #f4f7f9;
+            --text-gray: #666;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; }
+
+        .main-content { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 100px); padding: 40px 0; }
+
+        .find-container { background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 480px; }
+
+        .find-title { text-align: center; font-size: 26px; font-weight: bold; color: var(--brand-blue); margin-bottom: 30px; }
+
+        /* 탭 디자인 개선 */
+        .tab-menu { display: flex; margin-bottom: 30px; background: #f8f9fa; border-radius: 8px; padding: 5px; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: var(--text-gray); border-radius: 6px; transition: 0.3s; }
+        .tab-btn.active { background: white; color: var(--brand-blue); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        /* 폼 요소 디자인 */
+        .find-form { display: none; animation: fadeIn 0.4s ease; }
+        .find-form.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 8px; }
+
+        input, select {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px;
+            box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus, select:focus { border-color: var(--brand-blue); outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+
+        .btn-submit {
+            width: 100%; padding: 15px; background-color: var(--brand-blue); color: white; border: none;
+            border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s;
+        }
+        .btn-submit:hover { background-color: #0056b3; transform: translateY(-1px); }
+
+        .link-footer { text-align: center; margin-top: 25px; font-size: 14px; }
+        .link-footer a { color: var(--text-gray); text-decoration: none; font-weight: 500; }
+        .link-footer a:hover { color: var(--brand-blue); text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<nav th:replace="~{index :: menu}"></nav>
+
+<div class="main-content">
+    <div class="find-container">
+        <div class="find-title">계정 찾기</div>
+
+        <div class="tab-menu">
+            <div class="tab-btn active" id="tab-findId" onclick="openTab('findId')">아이디 찾기</div>
+            <div class="tab-btn" id="tab-resetPw" onclick="openTab('resetPw')">비밀번호 찾기</div>
+        </div>
+
+        <div id="findId" class="find-form active">
+            <form th:action="@{/find-id}" method="post">
+                <div class="form-group"><label>이름</label><input type="text" name="name" placeholder="가입 시 이름을 입력하세요" required></div>
+                <div class="form-group"><label>이메일 주소</label><input type="email" name="userEmail" placeholder="example@fds.com" required></div>
+                <div class="form-group"><label>생년월일 (YY/MM/DD)</label><input type="text" name="birth" placeholder="예: 00/01/01" required></div>
+                <button type="submit" class="btn-submit">아이디 찾기</button>
+            </form>
+        </div>
+
+        <div id="resetPw" class="find-form">
+            <form id="pwFindForm">
+                <div class="form-group"><label>아이디</label><input type="text" id="findPwId" placeholder="아이디를 입력하세요" required></div>
+                <div class="form-group"><label>이메일 주소</label><input type="email" id="findPwEmail" placeholder="가입 시 이메일을 입력하세요" required></div>
+                <div class="form-group"><label>생년월일 (YY/MM/DD)</label><input type="text" id="findPwBirth" placeholder="예: 00/01/01" required></div>
+                <div class="form-group">
+                    <label>보안 질문</label>
+                    <select id="findPwQuestion" required>
+                        <option value="" disabled selected>질문을 선택해주세요</option>
+                        <option value="기억에 남는 추억의 장소는?">기억에 남는 추억의 장소는?</option>
+                        <option value="가장 존경하는 인물은?">가장 존경하는 인물은?</option>
+                        <option value="처음으로 키운 반려동물의 이름은?">처음으로 키운 반려동물의 이름은?</option>
+                        <option value="나의 보물 1호는?">나의 보물 1호는?</option>
+                        <option value="좌우명 또는 좋아하는 격언은?">좌우명 또는 좋아하는 격언은?</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>답변</label><input type="text" id="findPwAnswer" placeholder="질문에 대한 답변을 입력하세요" required></div>
+                <button type="button" class="btn-submit" onclick="checkUserWithSecurity()">본인 확인 단계로 이동</button>
+            </form>
+
+            <form id="newPwForm" th:action="@{/reset-password}" method="post" style="display: none;">
+                <input type="hidden" id="hiddenId" name="userId">
+                <input type="hidden" id="hiddenEmail" name="userEmail">
+                <input type="hidden" id="hiddenBirth" name="birth">
+                <input type="hidden" id="hiddenQuestion" name="pwQuestion">
+                <input type="hidden" id="hiddenAnswer" name="pwAnswer">
+                <div class="form-group">
+                    <label>새 비밀번호 설정</label>
+                    <input type="password" name="newPw" placeholder="새로운 비밀번호를 입력하세요" required>
+                </div>
+                <button type="submit" class="btn-submit">비밀번호 변경 완료</button>
+            </form>
+        </div>
+
+        <div class="link-footer"><a th:href="@{/login}">로그인 페이지로 돌아가기</a></div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    // 탭 전환 기능 수정
+    function openTab(tabName) {
+        // 모든 폼 숨기기
+        document.querySelectorAll('.find-form').forEach(form => form.classList.remove('active'));
+        // 모든 탭 비활성화
+        document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+
+        // 선택된 폼과 탭 활성화
+        document.getElementById(tabName).classList.add('active');
+        if(tabName === 'findId') {
+            document.getElementById('tab-findId').classList.add('active');
+        } else {
+            document.getElementById('tab-resetPw').classList.add('active');
+        }
+    }
+
+    // 본인 확인 AJAX 기능
+    function checkUserWithSecurity() {
+        const userId = document.getElementById('findPwId').value;
+        const userEmail = document.getElementById('findPwEmail').value;
+        const birth = document.getElementById('findPwBirth').value;
+        const pwQuestion = document.getElementById('findPwQuestion').value;
+        const pwAnswer = document.getElementById('findPwAnswer').value;
+
+        if(!userId || !userEmail || !birth || !pwAnswer) {
+            alert("모든 정보를 입력해주세요.");
+            return;
+        }
+
+        fetch(`/check-user?userId=${userId}&userEmail=${userEmail}&birth=${birth}&pwQuestion=${encodeURIComponent(pwQuestion)}&pwAnswer=${encodeURIComponent(pwAnswer)}`)
+            .then(res => res.json())
+            .then(isExist => {
+                if (isExist) {
+                    alert("본인 확인이 완료되었습니다. 새 비밀번호를 설정해주세요.");
+                    document.getElementById('pwFindForm').style.display = 'none';
+                    document.getElementById('newPwForm').style.display = 'block';
+                    document.getElementById('hiddenId').value = userId;
+                    document.getElementById('hiddenEmail').value = userEmail;
+                    document.getElementById('hiddenBirth').value = birth;
+                    document.getElementById('hiddenQuestion').value = pwQuestion;
+                    document.getElementById('hiddenAnswer').value = pwAnswer;
+                } else {
+                    alert("입력하신 정보와 일치하는 계정이 없습니다.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("서버 통신 중 오류가 발생했습니다.");
+            });
+    }
+</script>
+</body>
+</html>

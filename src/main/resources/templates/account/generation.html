@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>정보 입력 및 계좌 개설 - FDS BANK</title>
+    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <style>
+        .container { max-width: 500px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; position: relative; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: all 0.3s; }
+
+        /* 스캔 데이터(Readonly) 스타일 */
+        input[readonly] { background-color: #f0f7ff; border-color: #007bff; color: #0056b3; cursor: not-allowed; }
+
+        .btn-submit { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .info-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #007bff; font-size: 14px; }
+        .unlock-btn { font-size: 12px; color: #007bff; cursor: pointer; text-decoration: underline; float: right; font-weight: normal; }
+    </style>
+</head>
+<body>
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h2>✍️ 정보 입력</h2>
+
+    <div class="info-box">
+        <span th:if="${userName != null and userName != ''}">✨ 신분증 정보가 자동으로 입력되었습니다. 정보가 맞는지 확인해주세요.</span>
+        <span th:unless="${userName != null and userName != ''}">직접 정보를 입력하여 계좌를 개설해주세요.</span>
+    </div>
+
+    <form th:action="@{/account/create}" method="post">
+
+        <div class="form-group">
+            <label>이름
+                <span class="unlock-btn" th:if="${userName != null and userName != ''}" onclick="unlock('userName')">수정하기</span>
+            </label>
+            <input type="text" id="userName" name="userName"
+                   th:value="${userName}"
+                   th:readonly="${userName != null and userName != ''}"
+                   placeholder="실명을 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+            <label>생년월일 (6자리)
+                <span class="unlock-btn" th:if="${birthDate != null and birthDate != ''}" onclick="unlock('birthDate')">수정하기</span>
+            </label>
+            <input type="text" id="birthDate" name="birthDate"
+                   th:value="${birthDate}"
+                   th:readonly="${birthDate != null and birthDate != ''}"
+                   maxlength="6" placeholder="예: 990101" required>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+        <div class="form-group">
+            <label>초기 입금액 (원)</label>
+            <input type="number" name="amount" value="0" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label>계좌 비밀번호 (4자리)</label>
+            <input type="password" id="pw" name="password" maxlength="4" pattern="\d{4}" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+            <label>비밀번호 확인</label>
+            <input type="password" id="pw_confirm" maxlength="4" pattern="\d{4}" inputmode="numeric" required>
+            <p id="pw_msg" style="font-size: 12px; margin-top: 5px;"></p>
+        </div>
+
+        <button type="submit" class="btn-submit">계좌 개설 확정</button>
+    </form>
+</div>
+
+<script>
+    // 비밀번호 일치 실시간 체크
+    document.getElementById('pw_confirm').addEventListener('input', function() {
+        const pw = document.getElementById('pw').value;
+        const msg = document.getElementById('pw_msg');
+        if (this.value === pw) {
+            msg.innerText = "✅ 비밀번호가 일치합니다.";
+            msg.style.color = "green";
+        } else {
+            msg.innerText = "❌ 비밀번호가 일치하지 않습니다.";
+            msg.style.color = "red";
+        }
+    });
+
+    function unlock(elementId) {
+        const target = document.getElementById(elementId);
+        target.removeAttribute('readonly');
+        target.style.backgroundColor = 'white';
+        target.style.cursor = 'text';
+        target.focus();
+    }
+</script>
+</body>
+</html>

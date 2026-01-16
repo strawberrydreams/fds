@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>신분증 인증 - FDS BANK</title>
+    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <style>
+        .container { max-width: 500px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .camera-box { width: 100%; height: 300px; background: #000; border-radius: 12px; margin: 20px 0; position: relative; overflow: hidden; border: 3px solid #007bff; }
+
+        #video, #photoPreview { width: 100%; height: 100%; object-fit: cover; }
+        #photoPreview { display: none; background: #fff; }
+
+        .guide-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 60%; border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 10px; box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5); pointer-events: none; }
+
+        .btn-capture { width: 70px; height: 70px; background: white; border: 5px solid #007bff; border-radius: 50%; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-capture:active { transform: scale(0.9); }
+
+        .status { margin-top: 15px; font-weight: bold; color: #007bff; min-height: 24px; }
+        .loading-spinner { display: none; margin: 10px auto; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .result-area { display: none; margin-top: 20px; text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #e9ecef; }
+        .result-area label { font-size: 13px; color: #666; font-weight: bold; display: block; margin-bottom: 5px; }
+        .result-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn-retry { flex: 1; padding: 12px; background: #eee; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #555; }
+        .btn-next { flex: 2; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        .manual-area { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ddd; }
+        .btn-manual { background: none; border: 1px solid #007bff; color: #007bff; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #canvas { display: none; }
+    </style>
+</head>
+<body>
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h3>🪪 신분증 촬영</h3>
+    <p id="top-msg" style="font-size: 14px; color: #666;">신분증을 가이드라인에 맞춰주세요.</p>
+
+    <div class="camera-box">
+        <video id="video" autoplay playsinline></video>
+        <img id="photoPreview" src="" alt="Capture Preview">
+        <div id="guide-line" class="guide-line"></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="status" class="status">카메라 연결 중...</div>
+    <div id="spinner" class="loading-spinner"></div>
+
+    <button type="button" class="btn-capture" onclick="captureAndAnalyze()" id="captureBtn"></button>
+
+    <div id="resultArea" class="result-area">
+        <label>인식된 성함</label>
+        <input type="text" id="resName" class="result-input">
+
+        <label>인식된 생년월일</label>
+        <input type="text" id="resBirth" class="result-input">
+
+        <div class="btn-group">
+            <button type="button" class="btn-retry" onclick="resetCamera()">다시 찍기</button>
+            <button type="button" class="btn-next" onclick="goToGeneration()">이 정보로 진행</button>
+        </div>
+    </div>
+
+    <div class="manual-area" id="manualArea">
+        <p style="font-size: 13px; color: #999; margin-bottom: 10px;">분석이 잘 안 되나요?</p>
+        <button type="button" class="btn-manual" onclick="location.href='/account/generation'">직접 정보 입력하기</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const video = document.getElementById('video');
+    const photoPreview = document.getElementById('photoPreview');
+    const guideLine = document.getElementById('guide-line');
+    const status = document.getElementById('status');
+    const spinner = document.getElementById('spinner');
+    const captureBtn = document.getElementById('captureBtn');
+    const resultArea = document.getElementById('resultArea');
+    const manualArea = document.getElementById('manualArea');
+
+    let localStream = null;
+
+    // 1. 카메라 시작
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 1280, height: 720 } })
+            .then(stream => {
+                localStream = stream;
+                video.srcObject = stream;
+                status.innerText = "가이드라인에 맞춰 촬영 버튼을 눌러주세요.";
+                console.log("✅ 카메라 스트림 시작");
+            })
+            .catch(err => {
+                status.innerText = "카메라를 사용할 수 없습니다.";
+                console.error("❌ 카메라 에러:", err);
+            });
+    }
+
+    startCamera();
+
+    // 2. 촬영 및 분석
+    async function captureAndAnalyze() {
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL('image/jpeg', 1.0);
+        console.log("📸 이미지 캡처 완료");
+
+        status.innerText = "Google AI 분석 중...";
+        spinner.style.display = "block";
+        captureBtn.style.display = "none";
+        manualArea.style.display = "none";
+
+        try {
+            const response = await fetch('/account/ocr-api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ 'imageDate': imageData })
+            });
+
+            if (!response.ok) throw new Error("서버 응답 실패");
+
+            const data = await response.json();
+            console.log("📡 서버 응답 수신:");
+            console.table(data); // F12 콘솔에서 데이터 확인 가능
+
+            // 성공 시 카메라 정지 (자원 해제)
+            stopCamera();
+            showResultView(imageData, data.name, data.birth);
+
+        } catch (err) {
+            console.error("❌ 분석 중 에러 발생:", err);
+            alert("정보를 인식하지 못했습니다. 다시 시도해주세요.");
+            resetCamera();
+        }
+    }
+
+    // 3. 결과 뷰 전환
+    function showResultView(image, name, birth) {
+        spinner.style.display = "none";
+        status.innerText = "인식된 정보를 확인하세요.";
+        document.getElementById('top-msg').innerText = "인식 결과가 틀리다면 직접 수정할 수 있습니다.";
+
+        video.style.display = "none";
+        guideLine.style.display = "none";
+        photoPreview.src = image;
+        photoPreview.style.display = "block";
+
+        // 서버에서 온 데이터 매핑 (undefined 방지)
+        document.getElementById('resName').value = name || "미인식";
+        document.getElementById('resBirth').value = birth || "미인식";
+
+        resultArea.style.display = "block";
+    }
+
+    // 4. 카메라 정지 함수
+    function stopCamera() {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            console.log("🔌 카메라 자원 해제 완료");
+        }
+    }
+
+    // 5. 다시 찍기
+    function resetCamera() {
+        stopCamera();
+        location.reload();
+    }
+
+    // 6. 다음 단계 이동
+    function goToGeneration() {
+        const finalName = document.getElementById('resName').value;
+        const finalBirth = document.getElementById('resBirth').value;
+
+        console.log("🚀 최종 데이터 전송:", { finalName, finalBirth });
+
+        // 쿼리 파라미터 이름을 generation.html과 컨트롤러가 받는 이름에 맞춤
+        location.href = `/account/generation?userName=${encodeURIComponent(finalName)}&userBirth=${encodeURIComponent(finalBirth)}`;
+    }
+</script>
+</body>
+</html>

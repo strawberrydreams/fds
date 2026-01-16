@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>내 카드 관리 - FDS BANK</title>
+    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+  <style>
+    .container { max-width: 1000px; margin: 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    h2 { color: #1a1a1a; margin-bottom: 30px; border-bottom: 3px solid #007bff; padding-bottom: 15px; }
+
+    .card-row { display: flex; align-items: center; background: #fdfdfd; border: 1px solid #eee; border-radius: 15px; padding: 20px; margin-bottom: 25px; gap: 30px; transition: 0.3s; }
+    .card-row:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+
+    .card-visual { flex-shrink: 0; width: 280px; height: 160px; border-radius: 12px; padding: 20px; color: white; font-family: 'Courier New', monospace; position: relative; overflow: hidden; box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+    .card-visual.CHECK { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .card-visual.CREDIT { background: linear-gradient(135deg, #434343 0%, #000000 100%); }
+    .card-visual.TERMINATED { background: #ccc !important; filter: grayscale(1); }
+    .card-num { font-size: 16px; letter-spacing: 2px; margin-top: 45px; }
+    .card-name { margin-top: 25px; font-size: 12px; font-family: sans-serif; }
+
+    .card-info-area { flex-grow: 1; }
+    .status-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: bold; margin-left: 10px;}
+    .status-tag.ACTIVE { background: #e3f2fd; color: #1976d2; }
+    .status-tag.LOST { background: #fff3e0; color: #f57c00; }
+    .status-tag.TERMINATED { background: #f5f5f5; color: #9e9e9e; }
+
+    .action-btns { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-act { padding: 10px 18px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; border: 1px solid #ddd; transition: 0.2s; text-decoration: none; display: inline-block; text-align: center; }
+    .btn-lost { background: #fff; color: #f57c00; border-color: #f57c00; }
+    .btn-recover { background: #007bff; color: white; border-color: #007bff; }
+    .btn-delete { background: #fff; color: #dc3545; border-color: #dc3545; }
+
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background: white; width: 350px; margin: 15% auto; padding: 30px; border-radius: 15px; text-align: center; }
+    .modal-input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 10px; border: 1px solid #ddd; border-radius: 8px; margin: 20px 0; }
+    .modal-btn-group { display: flex; gap: 10px; }
+    .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+    .btn-confirm { background: #007bff; color: white; }
+    .btn-cancel { background: #eee; }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+  <h2>💳 내 카드 관리 센터</h2>
+
+  <div th:if="${message}" th:text="${message}" style="padding:15px; background:#e8f5e9; color:#2e7d32; border-radius:8px; margin-bottom:20px; text-align:center;"></div>
+  <div th:if="${error}" th:text="${error}" style="padding:15px; background:#fdecea; color:#d32f2f; border-radius:8px; margin-bottom:20px; text-align:center;"></div>
+
+  <div th:each="card : ${cards}" class="card-row">
+    <div class="card-visual" th:classappend="${card.cardType} + ' ' + ${card.status}">
+      <div style="font-size: 10px; opacity: 0.8;" th:text="${card.cardType}">CHECK</div>
+      <div class="card-num" th:text="${card.cardNumber}">0000-0000-0000-0000</div>
+      <div class="card-name" th:text="${card.user.name}">HONG GIL DONG</div>
+    </div>
+
+    <div class="card-info-area">
+      <h4 style="margin:0;">
+        <span th:text="${card.cardType == 'CHECK' ? '체크카드' : '신용카드'}">카드종류</span>
+        <span class="status-tag" th:classappend="${card.status}" th:text="${card.status}">STATUS</span>
+      </h4>
+      <div style="margin-top:10px; font-size:14px; color:#666;">
+        연결계좌: <strong th:text="${card.account.accountNumber}">123-456</strong>
+      </div>
+
+      <div class="action-btns" th:if="${card.status != 'TERMINATED'}">
+        <form th:action="@{/card/update-status}" method="post" style="display:contents;">
+          <input type="hidden" name="cardId" th:value="${card.cardId}">
+          <button th:if="${card.status == 'ACTIVE'}" type="submit" name="status" value="LOST"
+                  class="btn-act btn-lost" onclick="return confirm('분실 신고를 하시겠습니까?')">⚠️ 분실신고</button>
+        </form>
+
+        <button th:if="${card.status == 'LOST'}" type="button"
+                class="btn-act btn-recover btn-modal-trigger"
+                th:data-id="${card.cardId}"
+                data-status="ACTIVE">🔓 분실해제</button>
+
+        <a th:href="@{/card/terminate(selectedCard=${card.cardId})}" class="btn-act btn-delete">🗑️ 카드해지</a>
+      </div>
+
+      <div th:if="${card.status == 'TERMINATED'}" style="margin-top: 15px; color: #999; font-size: 13px;">
+        * 이 카드는 해지되어 사용할 수 없습니다.
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${#lists.isEmpty(cards)}" style="text-align: center; padding: 50px; color: #999;">
+    보유하신 카드가 없습니다.
+  </div>
+
+  <div id="authModal" class="modal">
+    <div class="modal-content">
+      <h3>보안 인증</h3>
+      <p style="font-size: 13px; color: #666;">계좌 비밀번호 4자리를 입력해주세요.</p>
+      <form id="authForm" th:action="@{/card/update-status}" method="post">
+        <input type="hidden" id="modalCardId" name="cardId">
+        <input type="hidden" id="modalStatus" name="status">
+        <input type="password" name="password" class="modal-input" maxlength="4" inputmode="numeric" required>
+        <div class="modal-btn-group">
+          <button type="button" class="modal-btn btn-cancel" onclick="closeAuthModal()">취소</button>
+          <button type="submit" class="modal-btn btn-confirm">확인</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  document.querySelectorAll('.btn-modal-trigger').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const cardId = this.getAttribute('data-id');
+      const status = this.getAttribute('data-status');
+      document.getElementById('modalCardId').value = cardId;
+      document.getElementById('modalStatus').value = status;
+      document.getElementById('authModal').style.display = 'block';
+    });
+  });
+
+  function closeAuthModal() {
+    document.getElementById('authModal').style.display = 'none';
+    const input = document.querySelector('.modal-input');
+    if(input) input.value = '';
+  }
+
+  window.onclick = function(event) {
+    if (event.target == document.getElementById('authModal')) closeAuthModal();
+  }
+</script>
+</body>
+</html>

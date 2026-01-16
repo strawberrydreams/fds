@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{index :: common_head('회원 탈퇴 | 안심거래 서비스')}"></th:block>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #f4f7f9; margin: 0; }
+        .withdraw-container { max-width: 500px; margin: 80px auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; }
+        .warning-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 25px; }
+        .warning-box h3 { color: #c53030; margin-top: 0; font-size: 18px; }
+        .warning-box li { color: #742a2a; font-size: 14px; margin-bottom: 5px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .btn-withdraw { width: 100%; padding: 14px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-withdraw:hover { background: #c0392b; }
+        .link-back { display: block; margin-top: 15px; color: #888; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<nav th:replace="~{index :: menu}"></nav>
+
+<div class="withdraw-container">
+    <h2>회원 탈퇴</h2>
+    <p style="color: #666; margin-bottom: 30px;">아래 주의사항을 확인하신 후 탈퇴를 진행해 주세요.</p>
+
+    <div class="warning-box">
+        <h3>주의사항</h3>
+        <ul>
+            <li>탈퇴 시 모든 개인정보 및 거래 내역이 삭제됩니다.</li>
+            <li>진행 중인 사기 신고 내역이 있을 경우 탈퇴가 제한될 수 있습니다.</li>
+            <li>삭제된 데이터는 어떠한 경우에도 복구되지 않습니다.</li>
+        </ul>
+    </div>
+
+    <form th:action="@{/withdraw}" method="post" onsubmit="return confirm('정말로 탈퇴하시겠습니까?');">
+        <div class="form-group">
+            <label>본인 확인을 위해 비밀번호를 입력해 주세요.</label>
+            <input type="password" name="userPw" placeholder="현재 비밀번호 입력" required>
+        </div>
+
+        <p th:if="${error}" th:text="${error}" style="color: #e74c3c; font-size: 13px; margin-bottom: 15px;"></p>
+
+        <button type="submit" class="btn-withdraw">회원 탈퇴 확정</button>
+    </form>
+
+    <a th:href="@{/mypage}" class="link-back">취소하고 돌아가기</a>
+</div>
+</body>
+</html>

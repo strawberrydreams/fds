@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{index :: common_head('회원 정보 관리 | 관리자')}"></th:block>
+    <style>
+        :root { --brand-blue: #007bff; } /* 파란색 고정 */
+        body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; margin: 0; }
+        .edit-container { max-width: 650px; margin: 60px auto; background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+        .edit-header { text-align: center; margin-bottom: 35px; }
+        .edit-header h2 { color: var(--brand-blue); font-size: 26px; margin-bottom: 10px; }
+        .edit-header p { color: #718096; font-size: 14px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+        .form-group { margin-bottom: 22px; }
+        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #4a5568; }
+        input, select { width: 100%; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: all 0.2s ease; color: #2d3748; }
+        input:focus, select:focus { outline: none; border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1); }
+        input[readonly] { background: #f7fafc; color: #a0aec0; cursor: not-allowed; }
+        .danger-zone { margin-top: 30px; padding: 25px; background: #fff5f5; border-radius: 12px; border: 1px solid #fed7d7; }
+        .danger-title { font-size: 14px; font-weight: bold; color: #c53030; margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
+        .btn-group { display: flex; gap: 12px; margin-top: 40px; }
+        .btn-save { flex: 2; padding: 16px; background: var(--brand-blue); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .btn-save:hover { background: #0056b3; transform: translateY(-2px); }
+        .btn-cancel { flex: 1; padding: 16px; background: #edf2f7; color: #4a5568; text-decoration: none; border-radius: 10px; text-align: center; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        .btn-cancel:hover { background: #e2e8f0; }
+        .btn-delete { width: 100%; margin-top: 15px; background: transparent; color: #e53e3e; padding: 10px; border: 1px solid #feb2b2; border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-delete:hover { background: #fff5f5; color: #c53030; }
+    </style>
+</head>
+<body>
+
+<nav th:replace="~{index :: menu}"></nav>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <h2>🛠️ 회원 정보 제어</h2>
+        <p>관리자 권한으로 해당 회원의 정보를 강제로 수정하거나 제어합니다.</p>
+    </div>
+
+    <form th:action="@{/admin/users/update}" method="post">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>아이디</label>
+                <input type="text" name="userId" th:value="${member.userId}" readonly>
+            </div>
+            <div class="form-group">
+                <label>권한 등급</label>
+                <select name="role">
+                    <option value="USER" th:selected="${member.role == 'USER'}">일반 사용자 (USER)</option>
+                    <option value="ADMIN" th:selected="${member.role == 'ADMIN'}">관리자 (ADMIN)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>이름</label>
+                <input type="text" name="name" th:value="${member.name}" required>
+            </div>
+            <div class="form-group">
+                <label>성별</label>
+                <select name="gender">
+                    <option value="M" th:selected="${member.gender == 'M'}">남성</option>
+                    <option value="F" th:selected="${member.gender == 'F'}">여성</option>
+                </select>
+            </div>
+            <div class="form-group full-width">
+                <label>이메일</label>
+                <input type="email" name="userEmail" th:value="${member.userEmail}" required>
+            </div>
+            <div class="form-group full-width">
+                <label>생년월일</label>
+                <input type="text" name="birth" th:value="${member.birth}" placeholder="YY/MM/DD (예: 00/01/01)" pattern="\d{2}/\d{2}/\d{2}">
+            </div>
+        </div>
+
+        <div class="danger-zone">
+            <div class="danger-title">보안 관리</div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #e53e3e;">비밀번호 강제 재설정</label>
+                <input type="password" name="newPw" placeholder="새로운 비밀번호를 입력하면 즉시 변경됩니다.">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a th:href="@{/admin/users}" class="btn-cancel">취소</a>
+            <button type="submit" class="btn-save">수정 사항 반영하기</button>
+        </div>
+    </form>
+
+    <form th:action="@{/admin/users/delete/{id}(id=${member.userId})}" method="post"
+          onsubmit="return confirm('경고: 회원을 삭제하면 모든 데이터가 소실됩니다. 진행하시겠습니까?');"
+          style="margin-top: 10px;">
+        <button type="submit" class="btn-delete">이 회원 계정 영구 삭제</button>
+    </form>
+</div>
+</body>
+</html>

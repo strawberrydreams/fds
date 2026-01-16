@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>카드 발급 약관동의 - FDS BANK</title>
+    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+
+    <style>
+        .container { max-width: 600px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #007bff; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #007bff; padding-bottom: 15px; }
+
+        .terms-box { background: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; height: 150px; overflow-y: scroll; margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: #666; }
+
+        .check-group { margin-bottom: 30px; background: #eef6ff; padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .check-group input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .check-group label { cursor: pointer; font-weight: bold; color: #333; }
+
+        .btn-next { width: 100%; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; }
+        .btn-next:hover { background-color: #0056b3; transform: translateY(-2px); }
+
+        .error-msg { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{index :: menu}"></div>
+
+<div class="container">
+    <h2>💳 카드 발급 약관 동의</h2>
+
+    <div class="error-msg" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/card/auth}" method="get">
+        <label>1. 개인신용정보 수집/이용 동의 (필수)</label>
+        <div class="terms-box">
+            제 1조 (목적) 이 약관은 FDS BANK가 발행하는 카드의 이용 조건 및 절차에 관한 사항을 규정함을 목적으로 합니다...
+            (중략) 본인은 FDS BANK가 카드 발급을 위해 본인의 개인정보를 수집하고 이용하는 것에 동의합니다.
+        </div>
+
+        <label>2. 카드 서비스 이용 약관 (필수)</label>
+        <div class="terms-box">
+            제 2조 (카드의 사용) 카드는 본인만 사용 가능하며, 타인에게 대여하거나 양도할 수 없습니다...
+            카드 결제 시 연결된 계좌에서 즉시 출금됨을 인지하고 동의합니다.
+        </div>
+
+        <div class="check-group" onclick="document.getElementById('agree').click();">
+            <input type="checkbox" id="agree" name="agree" required>
+            <label for="agree">위 약관에 모두 동의하며 카드 발급을 진행합니다.</label>
+        </div>
+
+        <button type="submit" class="btn-next">본인 인증 단계로 이동 →</button>
+    </form>
+</div>
+
+</body>
+</html>
