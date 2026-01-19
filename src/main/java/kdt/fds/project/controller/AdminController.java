@@ -1,8 +1,21 @@
 package kdt.fds.project.controller;
 
+import kdt.fds.project.dto.MemberDTO;
+import kdt.fds.project.entity.Account;
+import kdt.fds.project.entity.BlacklistAccount;
+import kdt.fds.project.entity.FraudDetectionResult;
+import kdt.fds.project.entity.Transaction;
 import kdt.fds.project.mapper.UserMapper;
-import kdt.fds.project.controller.MemberDTO;
+import kdt.fds.project.repository.AccountRepository;
+import kdt.fds.project.repository.BlacklistRepository;
+import kdt.fds.project.repository.FraudRepository;
+import kdt.fds.project.repository.TransactionRepository;
+import kdt.fds.project.service.AdminService;
+import kdt.fds.project.service.TransactionService;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,55 +23,92 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Controller
-@RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
+    private final AdminService adminService;
+    private final BlacklistRepository blacklistRepository;
+    private final TransactionService transactionService;
+    private final TransactionRepository transactionRepository;
+    private final AccountRepository accountRepository;
+    private final FraudRepository fraudRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    // [1] 전체 회원 리스트
-    @GetMapping("/users")
+    // ==========================================
+    // 1. 관리자 뷰(View) 페이지 - 주소: /admin/dashboard
+    // ==========================================
+    @GetMapping("/admin/dashboard")
+    public String adminDashboard() {
+        log.info("관리자 대시보드 뷰 호출");
+        return "admin/dashboard"; // templates/admin/dashboard.html 호출
+    }
+
+    @GetMapping("/admin/users")
     public String userList(Model model) {
         List<MemberDTO> users = userMapper.findAllUsers();
         model.addAttribute("users", users);
         return "admin/user_list";
     }
 
-    // [2] 회원 수정 폼 (관리자용)
-    @GetMapping("/users/edit/{userId}")
-    public String editUserForm(@PathVariable String userId, Model model) {
-        MemberDTO member = userMapper.findByUserId(userId);
-        model.addAttribute("member", member);
-        return "admin/user_edit";
+    // ==========================================
+    // 2. 관리자 데이터 API - 주소: /api/v1/admin/**
+    // ==========================================
+    @GetMapping("/api/v1/admin/history")
+    @ResponseBody
+    public ResponseEntity<List<Transaction>> getTransactionHistory() {
+        return ResponseEntity.ok(transactionRepository.findAll());
     }
 
-    // [3] 회원 정보 강제 업데이트 처리
-    @PostMapping("/users/update")
-    public String updateUser(@ModelAttribute MemberDTO memberDTO,
-                             @RequestParam(required = false) String newPw,
-                             RedirectAttributes rttr) {
-
-        // 비밀번호 강제 변경 요청이 있을 경우 처리
-        if (newPw != null && !newPw.isEmpty()) {
-            memberDTO.setUserPw(passwordEncoder.encode(newPw));
-            userMapper.updatePassword(memberDTO.getUserId(), memberDTO.getUserPw());
-        }
-
-        // 나머지 정보(이름, 이메일, 생년월일, 성별, 권한) 강제 업데이트
-        userMapper.updateUserByAdmin(memberDTO);
-
-        rttr.addFlashAttribute("msg", "회원 정보가 관리자에 의해 강제 수정되었습니다.");
-        return "redirect:/admin/users";
+    @GetMapping("/api/v1/admin/blacklist")
+    @ResponseBody
+    public ResponseEntity<List<BlacklistAccount>> getBlacklist() {
+        return ResponseEntity.ok(blacklistRepository.findAll());
     }
 
-    // [4] 회원 강제 삭제(탈퇴)
-    @PostMapping("/users/delete/{userId}")
-    public String deleteUser(@PathVariable String userId, RedirectAttributes rttr) {
-        userMapper.deleteUser(userId);
-        rttr.addFlashAttribute("msg", "해당 회원이 강제 탈퇴 처리되었습니다.");
-        return "redirect:/admin/users";
+    @GetMapping("/api/v1/admin/accounts")
+    @ResponseBody
+    public ResponseEntity<List<Account>> getAllAccounts() {
+        return ResponseEntity.ok(accountRepository.findAll());
+    }
+
+    @PostMapping("/api/v1/admin/approve/{id}")
+    @ResponseBody
+    public ResponseEntity<String> approveTransaction(@PathVariable("id") Long id) {
+        FraudDetectionResult fraudResult = fraudRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("탐지 결과 없음"));
+        fraudResult.setIsFraud(0);
+        fraudRepository.save(fraudResult);
+
+        // 실제 거래 승인 로직 포함 (기존 코드 유지)
+        Transaction tx = transactionRepository.findById(fraudResult.getTxId()).orElseThrow();
+        Account sender = accountRepository.findByAccountNumber(tx.getSourceValue()).orElseThrow();
+        transactionService.executeTransfer(tx, sender);
+
+        return ResponseEntity.ok("SUCCESS");
+    }
+
+    @PostMapping("/api/v1/admin/reject/{id}")
+    @ResponseBody
+    public ResponseEntity<String> reject(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.rejectTransaction(id));
+    }
+
+    @DeleteMapping("/api/v1/admin/blacklist/{accountNum}")
+    @ResponseBody
+    public ResponseEntity<?> removeBlacklist(@PathVariable String accountNum) {
+        adminService.removeBlacklist(accountNum);
+        return ResponseEntity.ok("해제 완료");
+    }
+
+    @PostMapping("/api/v1/admin/blacklist")
+    @ResponseBody
+    public ResponseEntity<?> addToBlacklist(@RequestBody Map<String, String> payload) {
+        String result = adminService.addToBlacklist(payload.get("accountNum"), payload.get("reason"));
+        return ResponseEntity.ok(result);
     }
 }

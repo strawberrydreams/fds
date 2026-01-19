@@ -11,6 +11,7 @@
             --border-color: #e1e4e8;
             --safe-color: #2ecc71;
             --deposit-color: #28a745;
+            --card-badge-color: #007bff; /* 카드 구분용 색상 */
         }
         body { font-family: 'Segoe UI', 'Pretendard', sans-serif; margin: 0; background-color: var(--bg-color); color: #333; }
 
@@ -37,12 +38,18 @@
         .card-num { font-size: 16px; letter-spacing: 2px; margin-top: 45px; }
         .card-name { margin-top: 25px; font-size: 12px; font-family: sans-serif; text-transform: uppercase; }
 
-        /* 거래 내역 스타일 */
+        /* 통합 거래 내역 스타일 */
         .transaction-list { list-style: none; padding: 0; margin: 0; }
         .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid #f0f0f0; }
         .transaction-item:last-child { border-bottom: none; }
-        .tx-info .desc { font-weight: bold; font-size: 16px; color: #1a1a1a; display: block; margin-bottom: 4px; }
-        .tx-info .time { font-size: 13px; color: #999; }
+
+        .tx-info { display: flex; align-items: center; gap: 15px; }
+        .tx-type-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold; min-width: 45px; text-align: center; }
+        .badge-account { background: #e8f5e9; color: var(--deposit-color); }
+        .badge-card { background: #e3f2fd; color: var(--card-badge-color); }
+
+        .tx-info-text .desc { font-weight: bold; font-size: 16px; color: #1a1a1a; display: block; margin-bottom: 4px; }
+        .tx-info-text .time { font-size: 13px; color: #999; }
         .tx-amount { font-weight: bold; font-size: 16px; }
 
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
@@ -79,7 +86,7 @@
                 </div>
                 <div class="card-wallet">
                     <th:block th:if="${cards != null && !#lists.isEmpty(cards)}">
-                        <div th:each="card : ${cards}" class="card-visual" th:classappend="${card.cardType} + ' ' + ${card.status}">
+                        <div th:each="card : ${cards}" class="card-visual" th:classappend="${card.cardType}">
                             <div style="font-size: 10px; opacity: 0.8;" th:text="${card.cardType}">CHECK</div>
                             <div class="card-num" th:text="${card.cardNumber}">0000-0000-0000-0000</div>
                             <div class="card-name" th:text="${member.name}">사용자명</div>
@@ -92,24 +99,28 @@
             </div>
 
             <div class="card">
-                <div class="card-title">최근 계좌 거래 내역</div>
+                <div class="card-title">최근 거래 내역 (최신 5건)</div>
                 <ul class="transaction-list">
-                    <th:block th:if="${not #lists.isEmpty(accountHistories)}">
-                        <li th:each="tx : ${accountHistories}" class="transaction-item">
+                    <th:block th:if="${not #lists.isEmpty(recentTransactions)}">
+                        <li th:each="tx : ${recentTransactions}" class="transaction-item">
                             <div class="tx-info">
-                                <span class="desc"
-                                      th:text="${tx.txType == 'TRANSFER_OUT' ? tx.targetAccountNumber + ' (송금)' : tx.description}">거래명</span>
-                                <span class="time" th:text="${#temporals.format(tx.createdAt, 'MM.dd HH:mm')}">날짜</span>
+                                <span class="tx-type-badge"
+                                      th:classappend="${tx.type == '카드' ? 'badge-card' : 'badge-account'}"
+                                      th:text="${tx.type}">구분</span>
+                                <div class="tx-info-text">
+                                    <span class="desc" th:text="${tx.content}">거래내용</span>
+                                    <span class="time" th:text="${#temporals.format(tx.transactionDate, 'MM.dd HH:mm')}">시간</span>
+                                </div>
                             </div>
                             <div class="tx-amount"
-                                 th:style="${tx.txType == 'DEPOSIT' || tx.txType == 'TRANSFER_IN' ? 'color: var(--deposit-color);' : 'color: var(--accent-color);'}"
-                                 th:text="${tx.txType == 'DEPOSIT' || tx.txType == 'TRANSFER_IN' ? '+ ' : '- '} + ${#numbers.formatInteger(tx.amount, 0, 'COMMA')} + '원'">
+                                 th:style="${tx.type == '계좌' ? 'color: var(--deposit-color);' : 'color: var(--accent-color);'}"
+                                 th:text="${tx.type == '카드' ? '- ' : ''} + ${#numbers.formatInteger(tx.amount, 0, 'COMMA')} + '원'">
                                 0원
                             </div>
                         </li>
                     </th:block>
 
-                    <li th:if="${#lists.isEmpty(accountHistories)}" style="text-align: center; padding: 50px; color: #999;">
+                    <li th:if="${#lists.isEmpty(recentTransactions)}" style="text-align: center; padding: 50px; color: #999;">
                         최근 거래 내역이 없습니다.
                     </li>
                 </ul>

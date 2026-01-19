@@ -1,0 +1,169 @@
+{
+  "scope" : "BUSINESS",
+  "fromDate" : "2025-12-08",
+  "toDate" : "2025-12-14",
+  "generatedAt" : "2026-01-15T11:05:11.037707",
+  "dashboard" : {
+    "range" : {
+      "fromDate" : "2025-12-08",
+      "toDate" : "2025-12-14"
+    },
+    "users" : {
+      "totalUsers" : 2,
+      "newUsersTrend" : [ ],
+      "genderDistribution" : {
+        "Female" : 1,
+        "M" : 1
+      },
+      "ageDistribution" : {
+        "10s" : 1,
+        "30s" : 1
+      }
+    },
+    "accounts" : {
+      "totalAccounts" : 0,
+      "newAccountsTrend" : [ ],
+      "statusDistribution" : { },
+      "averageBalanceByGenderAge" : [ ],
+      "accountsPerUserDistribution" : { }
+    },
+    "cards" : {
+      "totalCards" : 0,
+      "newCardsTrend" : [ ],
+      "statusDistribution" : { },
+      "typeDistribution" : { },
+      "issuerDistribution" : { },
+      "cardsPerUserDistribution" : { },
+      "cardsPerAccountDistribution" : { }
+    },
+    "transactions" : {
+      "totalTransactions" : 0,
+      "dailyTrend" : [ ],
+      "hourlyDistribution" : { },
+      "amountSummary" : {
+        "total" : 0,
+        "average" : null
+      },
+      "typeDistribution" : { },
+      "merchantStats" : {
+        "totalCount" : 0,
+        "missingCount" : 0,
+        "missingRate" : 0,
+        "topValues" : [ ]
+      },
+      "locationStats" : {
+        "totalCount" : 0,
+        "missingCount" : 0,
+        "missingRate" : 0,
+        "topValues" : [ ]
+      },
+      "targetAccountStats" : {
+        "totalCount" : 0,
+        "missingCount" : 0,
+        "missingRate" : 0,
+        "topValues" : [ ]
+      },
+      "descriptionStats" : {
+        "totalCount" : 0,
+        "missingCount" : 0,
+        "missingRate" : 0,
+        "topValues" : [ ]
+      },
+      "topAccountsByCount" : [ ],
+      "topAccountsByAmount" : [ ],
+      "topUsersByCount" : [ ],
+      "topUsersByAmount" : [ ]
+    },
+    "transactionFeatures" : {
+      "transactionCount" : 0,
+      "featureCount" : 0,
+      "coverageRate" : 0,
+      "balanceSummaries" : [ {
+        "name" : "OLD_BALANCE_ORG",
+        "min" : null,
+        "max" : null,
+        "average" : null
+      }, {
+        "name" : "NEW_BALANCE_ORG",
+        "min" : null,
+        "max" : null,
+        "average" : null
+      }, {
+        "name" : "OLD_BALANCE_DEST",
+        "min" : null,
+        "max" : null,
+        "average" : null
+      }, {
+        "name" : "NEW_BALANCE_DEST",
+        "min" : null,
+        "max" : null,
+        "average" : null
+      }, {
+        "name" : "ERROR_BALANCE",
+        "min" : null,
+        "max" : null,
+        "average" : null
+      } ],
+      "vFeaturesCount" : 0,
+      "averageFeaturesLength" : null
+    },
+    "detections" : {
+      "detectionCount" : 0,
+      "detectionTrend" : [ ],
+      "detectionCoverage" : 0,
+      "averageDetectionDelayMinutes" : null,
+      "fraudCount" : 0,
+      "fraudRate" : 0,
+      "fraudProbabilityDistribution" : { },
+      "engineDistribution" : { },
+      "actionDistribution" : { },
+      "thresholdDistribution" : { },
+      "thresholdExceedRate" : null
+    },
+    "fraudReports" : {
+      "totalReports" : 0,
+      "reportTrend" : [ ],
+      "statusDistribution" : { },
+      "reasonTop" : [ ],
+      "distinctAccountCount" : 0,
+      "duplicateRate" : 0,
+      "topAccounts" : [ ],
+      "reportedAccountDetectionRate" : null,
+      "reportedAccountFraudRate" : null
+    },
+    "blacklist" : {
+      "totalBlacklist" : 0,
+      "newBlacklistTrend" : [ ],
+      "reasonDistribution" : { },
+      "distinctAccountCount" : 0,
+      "duplicateCount" : 0,
+      "relatedTransactionCount" : 0,
+      "relatedDetectionCount" : 0
+    },
+    "referenceData" : {
+      "codebookCount" : 0,
+      "codebookCreatedTrend" : [ ],
+      "codebookUpdatedTrend" : [ ],
+      "codeTypeDistribution" : { },
+      "activeCount" : 0,
+      "inactiveCount" : 0,
+      "metaJsonCount" : 0,
+      "descriptionMissingCount" : 0,
+      "sortOrderDistribution" : { },
+      "configEntries" : [ ]
+    },
+    "crossEntity" : {
+      "segmentMetrics" : [ ],
+      "accountRanking" : [ ],
+      "merchantBreakdown" : { },
+      "locationBreakdown" : { },
+      "targetAccountBreakdown" : { },
+      "transactionTypeBreakdown" : { },
+      "amountBuckets" : [ ],
+      "hourBuckets" : [ ],
+      "typeBuckets" : [ ],
+      "engineActionComparisons" : [ ],
+      "blacklistDetectionRate" : null
+    }
+  }
+}

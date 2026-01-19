@@ -27,7 +27,15 @@ public class AccountService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     /**
-     * 1. 계좌 생성 (비밀번호 암호화 적용)
+     * [필수 추가] 0. 모든 계좌 목록 조회 (AccountController 에러 해결용)
+     */
+    @Transactional(readOnly = true)
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    }
+
+    /**
+     * 1. 계좌 생성 (비밀번호 암호화 및 랜덤 계좌번호 생성)
      */
     @Transactional
     public void createAccount(String loginUserId, Long initialBalance, String rawPassword) {
@@ -35,11 +43,13 @@ public class AccountService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        // 랜덤 계좌번호 생성 로직
         String newAccNum = String.format("%03d-%06d", (int)(Math.random() * 1000), (int)(Math.random() * 1000000));
 
         Account account = Account.builder()
                 .user(user)
-                .accountNumber(newAccNum)
+                .accountNumber(newAccNum) // 통합 필드명 적용
                 .password(encodedPassword)
                 .balance(initialBalance != null ? initialBalance : 0L)
                 .status("ACTIVE")
@@ -50,7 +60,7 @@ public class AccountService {
     }
 
     /**
-     * 2. 계좌 목록 조회
+     * 2. 특정 유저의 계좌 목록 조회
      */
     @Transactional(readOnly = true)
     public List<Account> getAccountsByLoginId(String loginUserId) {
@@ -60,7 +70,7 @@ public class AccountService {
     }
 
     /**
-     * [추가] 3. 마이페이지용 통합 거래 내역 조회 (입금, 이체, 인출 포함)
+     * 3. 마이페이지용 통합 거래 내역 조회
      */
     @Transactional(readOnly = true)
     public List<Transaction> getRecentTransactionsByLoginId(String loginId) {
@@ -68,7 +78,6 @@ public class AccountService {
         if (myAccounts.isEmpty()) {
             return Collections.emptyList();
         }
-        // 레포지토리에 추가한 In 구문을 사용하여 통합 조회
         return transactionRepository.findByAccountInOrderByCreatedAtDesc(myAccounts);
     }
 
@@ -82,11 +91,13 @@ public class AccountService {
                 .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다."));
 
         account.setBalance(account.getBalance() + amount);
+
+        // 입금 내역 저장
         saveTransaction(account, "DEPOSIT", amount, account.getBalance(), "직접 입금", null);
     }
 
     /**
-     * 5. 송금 처리
+     * 5. 송금 처리 (FDS 모니터링 대상이 되는 핵심 로직)
      */
     @Transactional
     public void transfer(String fromAccNum, String toAccNum, Long amount, String password) {
@@ -99,9 +110,11 @@ public class AccountService {
         if (fromAccNum.equals(toAccNum)) throw new IllegalArgumentException("동일한 계좌로 송금할 수 없습니다.");
         if (fromAccount.getBalance() < amount) throw new IllegalStateException("잔액이 부족합니다.");
 
+        // 잔액 이동
         fromAccount.setBalance(fromAccount.getBalance() - amount);
         toAccount.setBalance(toAccount.getBalance() + amount);
 
+        // 출금 및 입금 이력 각각 저장
         saveTransaction(fromAccount, "TRANSFER_OUT", amount, fromAccount.getBalance(), "송금 완료", toAccNum);
         saveTransaction(toAccount, "TRANSFER_IN", amount, toAccount.getBalance(), "입금 완료", fromAccNum);
     }
@@ -121,7 +134,8 @@ public class AccountService {
         saveTransaction(account, "WITHDRAW", amount, account.getBalance(), "ATM 현금 인출", null);
     }
 
-    // 내역 조회 보조 메서드들
+    // --- 통계 및 내역 조회 보조 메서드 ---
+
     public List<Transaction> getRecentTransferHistory(String loginId) {
         return transactionRepository.findByAccount_User_UserIdAndTxTypeOrderByCreatedAtDesc(loginId, "TRANSFER_OUT");
     }
@@ -153,6 +167,8 @@ public class AccountService {
         account.setStatus("DELETED");
     }
 
+    // --- 내부 헬퍼 메서드 ---
+
     private void checkPassword(String accountNumber, String inputPassword) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다."));
@@ -165,11 +181,11 @@ public class AccountService {
         Transaction tx = Transaction.builder()
                 .account(account)
                 .txType(type)
-                .amount(amount)
+                .amount(amount) // 통합 필드명(txAmount -> amount)
                 .balanceAfterTx(balanceAfter)
                 .description(desc)
-                .targetAccountNumber(targetAcc)
-                .createdAt(LocalDateTime.now())
+                .targetAccountNumber(targetAcc) // 통합 필드명 적용
+                .createdAt(LocalDateTime.now()) // 통합 필드명 적용
                 .build();
         transactionRepository.save(tx);
     }

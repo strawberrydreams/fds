@@ -1,20 +1,20 @@
 package kdt.fds.project.controller;
 
 import kdt.fds.project.entity.Account;
-import kdt.fds.project.entity.Transaction;
+import kdt.fds.project.entity.User;
+import kdt.fds.project.repository.UserRepository;
 import kdt.fds.project.service.AccountService;
 import kdt.fds.project.service.GoogleVisionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,10 +26,41 @@ public class AccountController {
 
     private final AccountService accountService;
     private final GoogleVisionService googleVisionService;
+    private final UserRepository userRepository;
 
     /**
-     * 1. 계좌 개설 프로세스
+     * [REST API] 전체 계좌 목록 조회
+     * 오류 해결: AccountService에 getAllAccounts() 메서드가 있어야 합니다.
      */
+    @GetMapping("/api/list")
+    @ResponseBody
+    public ResponseEntity<List<Account>> getAllAccountsApi() {
+        log.info("REST API: 모든 계좌 목록 조회 요청");
+        List<Account> accounts = accountService.getAllAccounts();
+        return ResponseEntity.ok(accounts);
+    }
+
+    /**
+     * [REST API] 계좌 직접 생성
+     */
+    @PostMapping("/api/create")
+    @ResponseBody
+    public ResponseEntity<?> createAccountApi(@RequestParam String userId,
+                                              @RequestParam Long amount,
+                                              @RequestParam String password) {
+        log.info("REST API: 계좌 생성 요청 - ID: {}", userId);
+        try {
+            accountService.createAccount(userId, amount, password);
+            return ResponseEntity.status(201).body("계좌 생성 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("생성 실패: " + e.getMessage());
+        }
+    }
+
+    // ==========================================
+    // 1. 계좌 개설 뷰(View) 및 프로세스
+    // ==========================================
+
     @GetMapping("/terms")
     public String showTermsPage() {
         return "account/terms";
@@ -50,7 +81,7 @@ public class AccountController {
     }
 
     @PostMapping("/ocr-complete")
-    public String completeOcr(@RequestParam("imageDate") String imageData, RedirectAttributes redirectAttributes) {
+    public String completeOcr(@RequestParam("imageData") String imageData, RedirectAttributes redirectAttributes) {
         String fullText = googleVisionService.extractTextFromImage(imageData);
         String scannedName = parseName(fullText);
         String scannedBirth = parseBirth(fullText);
@@ -73,6 +104,7 @@ public class AccountController {
                                 @RequestParam Long amount, @RequestParam String password,
                                 Principal principal, RedirectAttributes redirectAttributes) {
         try {
+            // Principal을 통해 현재 로그인한 사용자 아이디 사용
             accountService.createAccount(principal.getName(), amount, password);
             redirectAttributes.addFlashAttribute("message", "계좌가 성공적으로 개설되었습니다.");
             return "redirect:/account/list";
@@ -82,9 +114,10 @@ public class AccountController {
         }
     }
 
-    /**
-     * 2. 계좌 목록 조회
-     */
+    // ==========================================
+    // 2. 계좌 관리 및 거래 기능
+    // ==========================================
+
     @GetMapping("/list")
     public String listAccounts(Principal principal, Model model) {
         List<Account> accounts = accountService.getAccountsByLoginId(principal.getName());
@@ -92,9 +125,6 @@ public class AccountController {
         return "account/list";
     }
 
-    /**
-     * 3. 입금 처리 (에러 발생 지점 관련)
-     */
     @GetMapping("/deposit")
     public String showDepositPage(@RequestParam(name = "accountNumber", required = false) String accountNumber,
                                   Principal principal, Model model) {
@@ -110,7 +140,6 @@ public class AccountController {
     public String processDeposit(@RequestParam String accountNumber, @RequestParam Long amount,
                                  @RequestParam String password, RedirectAttributes redirectAttributes) {
         try {
-            // Service 내에서 Transaction 엔티티 생성 시 amount 세팅 여부 확인 필요
             accountService.deposit(accountNumber, amount, password);
             redirectAttributes.addFlashAttribute("message", "입금 완료!");
             return "redirect:/account/list";
@@ -120,9 +149,6 @@ public class AccountController {
         }
     }
 
-    /**
-     * 4. 송금 처리
-     */
     @GetMapping("/transfer")
     public String showTransferPage(@RequestParam(name = "accountNumber", required = false) String accountNumber,
                                    Principal principal, Model model) {
@@ -149,9 +175,6 @@ public class AccountController {
         }
     }
 
-    /**
-     * 5. 인출 처리
-     */
     @GetMapping("/withdraw")
     public String showWithdrawPage(@RequestParam(name = "accountNumber", required = false) String accountNumber,
                                    Principal principal, Model model) {
@@ -176,9 +199,6 @@ public class AccountController {
         }
     }
 
-    /**
-     * 6. 계좌 해지
-     */
     @PostMapping("/delete")
     public String deleteAccount(@RequestParam("accountId") Long accountId, RedirectAttributes redirectAttributes) {
         try {
@@ -190,7 +210,7 @@ public class AccountController {
         return "redirect:/account/list";
     }
 
-    // --- 헬퍼 메서드 ---
+    // --- OCR 파싱 헬퍼 메서드 ---
     private String parseName(String text) {
         if (text == null || text.isEmpty()) return "미인식";
         String cleanText = text.replace(" ", "");

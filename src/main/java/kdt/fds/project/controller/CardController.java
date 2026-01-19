@@ -18,15 +18,11 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/card") // 다시 /card로 경로를 지정하여 FormController와 충돌을 방지합니다.
+@RequestMapping("/card")
 public class CardController {
 
     private final CardService cardService;
     private final AccountService accountService;
-
-    /**
-     * [삭제됨] @GetMapping("/") 메서드는 FormController에 이미 있으므로 여기서 중복으로 만들지 않습니다.
-     */
 
     /**
      * 1. 카드 발급 프로세스
@@ -51,7 +47,6 @@ public class CardController {
         if (userName == null || "미인식".equals(userName)) userName = "";
         if (userBirth == null || "미인식".equals(userBirth)) userBirth = "";
 
-        // Principal을 사용하여 실제 로그인한 사용자의 계좌만 조회
         model.addAttribute("accounts", accountService.getAccountsByLoginId(principal.getName()));
         model.addAttribute("userName", userName);
         model.addAttribute("userBirth", userBirth);
@@ -65,7 +60,6 @@ public class CardController {
                             Principal principal,
                             RedirectAttributes redirectAttributes) {
         try {
-            // 실제 로그인한 사용자 아이디 사용
             cardService.issueCard(principal.getName(), accountNumber, accountPassword, cardType);
             redirectAttributes.addFlashAttribute("message", "카드 발급이 완료되었습니다!");
             return "redirect:/card/list";
@@ -80,7 +74,6 @@ public class CardController {
      */
     @GetMapping("/list")
     public String listCards(Principal principal, Model model) {
-        // 본인의 카드만 조회
         model.addAttribute("cards", cardService.getCardsByLoginId(principal.getName()));
         return "card/list";
     }
@@ -122,13 +115,37 @@ public class CardController {
     }
 
     /**
-     * 3. 카드 내역 확인
+     * 3. 카드 내역 확인 및 시뮬레이터
      */
     @GetMapping("/history")
     public String showCardHistory(Principal principal, Model model) {
-        // 본인의 결제 내역 조회
         List<CardTransaction> histories = cardService.getCardTransactionsByLoginId(principal.getName());
         model.addAttribute("histories", histories);
         return "card/history";
+    }
+
+    // [수정] 템플릿 경로를 실제 파일 위치에 맞춰 수정했습니다.
+    // 만약 pay-sim.html이 templates/card/pay-sim.html 에 있다면 "card/pay-sim"으로 리턴해야 합니다.
+    @GetMapping("/simulator")
+    public String showSimulatorPage(Model model) {
+        model.addAttribute("title", "가상 결제 시뮬레이터");
+        return "card/pay-sim";
+    }
+
+    // 가상 결제 실행 로직
+    @PostMapping("/execute-pay")
+    public String executePayment(@RequestParam String cardNumber,
+                                 @RequestParam String merchantName,
+                                 @RequestParam Long amount,
+                                 Principal principal,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            cardService.createTransactionByLoginId(principal.getName(), cardNumber, merchantName, amount);
+            redirectAttributes.addFlashAttribute("message", "결제가 완료되었습니다.");
+            return "redirect:/card/history";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "결제 실패: " + e.getMessage());
+            return "redirect:/card/simulator";
+        }
     }
 }

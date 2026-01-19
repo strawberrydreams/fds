@@ -1,7 +1,7 @@
 package kdt.fds.project.service;
 
 import kdt.fds.project.mapper.UserMapper;
-import kdt.fds.project.controller.MemberDTO;
+import kdt.fds.project.dto.MemberDTO;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

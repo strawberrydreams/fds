@@ -1,0 +1,19 @@
+{
+  "scope" : "GENERAL",
+  "fromDate" : "2026-01-05",
+  "toDate" : "2026-01-11",
+  "generatedAt" : "2026-01-15T00:02:41.013184",
+  "kpi" : {
+    "transactionCount" : 0,
+    "totalAmount" : 0,
+    "averageAmount" : null,
+    "detectedCount" : 0,
+    "detectedRate" : 0,
+    "fraudCount" : 0,
+    "fraudRate" : 0,
+    "averageFraudProbability" : null,
+    "medianFraudProbability" : null,
+    "latestTransactionAt" : null,
+    "latestDetectionAt" : null
+  }
+}

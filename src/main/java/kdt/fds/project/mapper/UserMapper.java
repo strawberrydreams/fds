@@ -1,6 +1,6 @@
 package kdt.fds.project.mapper;
 
-import kdt.fds.project.controller.MemberDTO;
+import kdt.fds.project.dto.MemberDTO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package kdt.fds.project.controller;
+package kdt.fds.project.dto;
 import lombok.Data;
 
 @Data

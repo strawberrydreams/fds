@@ -130,13 +130,15 @@ public class CardService {
         }
 
         if (account.getBalance() < amount) {
-            // 실패 내역을 저장하고 싶다면 여기서 saveTransaction 호출 가능
+            log.warn("결제 실패 - 잔액 부족: 카드번호={}, 현재잔액={}, 요청금액={}", cardNumber, account.getBalance(), amount);
             throw new IllegalStateException("계좌 잔액이 부족합니다.");
         }
 
         // 4. 잔액 차감
         account.setBalance(account.getBalance() - amount);
-        // JPA Dirty Checking으로 변경 감지되어 자동 업데이트됨
+
+        // Dirty Checking으로 자동 반영되지만, 계좌 잔액은 중요 데이터이므로 명시적 save 권장
+        accountRepository.save(account);
 
         // 5. 결제 내역 저장
         CardTransaction tx = CardTransaction.builder()
@@ -150,5 +152,24 @@ public class CardService {
         cardTransactionRepository.save(tx);
 
         log.info("결제 승인 완료 - 가맹점: {}, 금액: {}, 카드: {}", merchantName, amount, cardNumber);
+    }
+
+    /**
+     * 컨트롤러에서 호출하는 가상 결제 실행 메서드
+     */
+    @Transactional
+    public void createTransactionByLoginId(String loginId, String cardNumber, String merchantName, Long amount) {
+        // 1. 보안 체크: 해당 카드가 실제로 로그인한 사용자의 카드가 맞는지 확인
+        Card card = cardRepository.findByCardNumber(cardNumber)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카드 번호입니다."));
+
+        // 유저 아이디(String) 비교 시 null 체크와 함께 equals 사용
+        if (card.getUser() == null || !card.getUser().getUserId().equals(loginId)) {
+            log.error("보안 위배 시도: 로그인ID={} 가 타인의 카드번호={} 결제를 시도함", loginId, cardNumber);
+            throw new IllegalArgumentException("본인 소유의 카드만 결제가 가능합니다.");
+        }
+
+        // 2. 이미 구현된 결제 프로세스 실행 (잔액 차감 + 내역 저장)
+        processPayment(cardNumber, amount, merchantName);
     }
 }
