@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{index :: common_head('신고 내역 조회 | FDS BANK')}"></th:block>
+    <style>
+        .main-content { padding: 60px 0; min-height: calc(100vh - 70px); background-color: #f4f7f9; }
+        .list-container {
+            background: #fff; padding: 40px; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 900px; margin: auto;
+        }
+        .list-title { text-align: center; font-size: 26px; font-weight: bold; color: #333; margin-bottom: 30px; }
+        .table { margin-top: 10px; border-collapse: separate; border-spacing: 0 10px; }
+        .table thead th { border: none; color: #666; font-weight: 600; text-transform: uppercase; font-size: 13px; }
+        .table tbody tr { background-color: #f8f9fa; transition: 0.2s; }
+        .table tbody tr:hover { transform: scale(1.01); background-color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .table tbody td { border: none; padding: 15px; vertical-align: middle; }
+        .table tbody td:first-child { border-radius: 8px 0 0 8px; }
+        .table tbody td:last-child { border-radius: 0 8px 8px 0; }
+        .rank-badge { width: 30px; height: 30px; background: #007bff; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
+        .count-badge { background: #ffeef0; color: #ff4757; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<nav th:replace="~{index :: menu}"></nav>
+
+<div class="main-content">
+    <div class="list-container">
+        <div class="list-title">사기 신고 조회</div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr class="text-center">
+                    <th>순위</th><th>계좌번호</th><th>누적 신고</th><th>상태</th>
+                </tr>
+                </thead>
+                <tbody id="rankingTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/reports/ranking')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('rankingTableBody');
+                tbody.innerHTML = data.map((r, i) => `
+                        <tr class="text-center">
+                            <td><div class="rank-badge mx-auto">${i+1}</div></td>
+                            <td class="fw-bold">${r.reportedAccount}</td>
+                            <td><span class="count-badge">${r.reportCount}회 신고</span></td>
+                            <td><span class="badge ${r.status === 'PENDING' ? 'bg-warning text-dark' : 'bg-secondary'}">${r.status}</span></td>
+                        </tr>
+                    `).join('');
+            });
+    });
+</script>
+</body>
+</html>

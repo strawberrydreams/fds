@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{index :: common_head('사기 신고 접수 | FDS BANK')}"></th:block>
+
+    <style>
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 70px);
+            padding: 40px 0;
+        }
+
+        .report-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4757;
+            margin-bottom: 30px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #ff4757;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #e84118;
+            transform: translateY(-1px);
+        }
+    </style>
+
+    <meta th:if="${_csrf != null}" name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:if="${_csrf != null}" name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+
+<nav th:replace="~{index :: menu}"></nav>
+
+<div class="main-content">
+    <div class="report-container">
+        <div class="report-title">🚨 사기 의심 계좌 신고</div>
+
+        <form id="fraudReportForm">
+            <div class="form-group">
+                <label>신고 계좌번호</label>
+                <input type="text" id="account" placeholder="'-' 없이 숫자만 입력" required>
+            </div>
+
+            <div class="form-group">
+                <label>신고 사유</label>
+                <select id="reason" required>
+                    <option value="1">보이스피싱 의심</option>
+                    <option value="2">대포통장 의심</option>
+                    <option value="3">중고거래 사기</option>
+                    <option value="4">검찰/기관 사칭</option>
+                    <option value="5">가족/지인 사칭 메신저 피싱</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn-submit" onclick="submitReport()">신고 접수하기</button>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function submitReport() {
+        const account = document.getElementById('account').value;
+        const reason = document.getElementById('reason').value;
+
+        if(!account) {
+            alert("계좌번호를 입력해주세요.");
+            return;
+        }
+
+        // [4] 보안 토큰 및 헤더 구성
+        const headers = { 'Content-Type': 'application/json' };
+        const csrfMeta = document.querySelector('meta[name="_csrf"]');
+        const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+
+        if (csrfMeta && csrfHeaderMeta) {
+            headers[csrfHeaderMeta.content] = csrfMeta.content;
+        }
+
+        // [5] 서버와 통신 (POST /api/reports)
+        fetch('/api/reports', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ account: account, reason: reason })
+        })
+            .then(res => {
+                // 응답이 JSON이 아닐 경우(500 에러 등)를 대비한 예외 처리
+                if (!res.ok) {
+                    return res.text().then(text => { throw new Error(text) });
+                }
+                return res.json();
+            })
+            .then(data => {
+                // 서버에서 보낸 message와 count 활용
+                alert(data.message + (data.count ? "\n(현재 " + data.count + "회 신고됨)" : ""));
+                location.href = "/report/list";
+            })
+            .catch(err => {
+                console.error("상세 에러:", err);
+                alert("신고 접수 중 오류가 발생했습니다. 다시 시도해 주세요.");
+            });
+    }
+</script>
+</body>
+</html>

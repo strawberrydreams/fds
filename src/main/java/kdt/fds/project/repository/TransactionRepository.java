@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
@@ -35,6 +36,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * 특정 계좌번호(SourceValue)의 최근 거래 10건
      */
     List<Transaction> findTop10BySourceValueOrderByCreatedAtDesc(String sourceValue);
+
+    /**
+     * [추가] 특정 계좌번호(SourceValue)로 조회하여 가장 최근 거래 1건을 가져옵니다. (신고 연동용)
+     */
+    Optional<Transaction> findFirstBySourceValueOrderByCreatedAtDesc(String sourceValue);
 
     // ==========================================
     // 2. 관리자 및 FDS 모니터링용
