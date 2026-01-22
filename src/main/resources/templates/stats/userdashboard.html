@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{stats/stats-common :: stats_head('사용자 통계 대시보드 | FDS')}"></th:block>
+</head>
+<body>
+<nav th:replace="~{index :: menu}"></nav>
+
+<div class="stats-container">
+    <!-- Page Header -->
+    <header class="stats-header">
+        <div>
+            <h1>사용자 대시보드</h1>
+            <p class="subtitle">실시간 요약 &middot; <span th:text="${rangeLabel}">최근 7일</span></p>
+        </div>
+        <div class="controls">
+            <form th:action="@{/stats/dashboard}" method="get">
+                <select name="range" onchange="this.form.submit()">
+                    <option value="TODAY" th:selected="${range.name() == 'TODAY'}">오늘</option>
+                    <option value="LAST_7_DAYS" th:selected="${range.name() == 'LAST_7_DAYS'}">최근 7일</option>
+                </select>
+            </form>
+        </div>
+    </header>
+
+    <!-- Summary KPI Grid -->
+    <section class="stat-grid">
+        <div class="stat-card">
+            <span class="stat-label">거래 건수</span>
+            <strong class="stat-value" th:text="${#numbers.formatInteger(summary.transactionCount(), 0, 'COMMA')}">0</strong>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">거래 금액 합계</span>
+            <strong class="stat-value" th:text="${summary.totalAmount() != null ? #numbers.formatInteger(summary.totalAmount(), 0, 'COMMA') + ' 원' : '-'}">0 원</strong>
+            <span class="stat-hint" th:text="'평균 ' + (${summary.averageAmount() != null ? #numbers.formatInteger(summary.averageAmount(), 0, 'COMMA') + ' 원' : '-'})">평균 0 원</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">탐지 건수</span>
+            <strong class="stat-value" th:text="${#numbers.formatInteger(summary.detectedCount(), 0, 'COMMA')}">0</strong>
+            <span class="stat-hint" th:text="'탐지율 ' + (${summary.detectedRate() != null ? #numbers.formatDecimal(summary.detectedRate() * 100, 0, 2) + '%' : '-'})">탐지율 0%</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">사기 확정</span>
+            <strong class="stat-value" th:text="${#numbers.formatInteger(summary.fraudCount(), 0, 'COMMA')}">0</strong>
+            <span class="stat-hint" th:text="'확정율 ' + (${summary.fraudRate() != null ? #numbers.formatDecimal(summary.fraudRate() * 100, 0, 2) + '%' : '-'})">확정율 0%</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">평균 사기확률</span>
+            <strong class="stat-value" th:text="${summary.averageFraudProbability() != null ? #numbers.formatDecimal(summary.averageFraudProbability(), 0, 3) : '-'}">-</strong>
+            <span class="stat-hint" th:if="${summary.medianFraudProbability() != null}" th:text="'중앙 ' + ${#numbers.formatDecimal(summary.medianFraudProbability(), 0, 3)}">중앙 0.000</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">최신 탐지 시각</span>
+            <strong class="stat-value" th:text="${summary.latestDetectionAt() != null ? #temporals.format(summary.latestDetectionAt(), 'MM-dd HH:mm') : '-'}">-</strong>
+        </div>
+    </section>
+
+    <!-- Profile & Accounts -->
+    <section class="panel-grid">
+        <div class="panel">
+            <div class="panel__header">
+                <h2>프로필</h2>
+            </div>
+            <div class="muted">
+                <div>이름: <strong th:text="${dashboard.profile().name() ?: '-'}">-</strong></div>
+                <div>로그인 ID: <strong th:text="${dashboard.profile().loginId() ?: '-'}">-</strong></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel__header">
+                <h2>계좌</h2>
+                <span class="panel__meta">내 계좌 상태 및 잔액</span>
+            </div>
+            <div class="table-wrap" th:if="${dashboard.accounts() != null and !dashboard.accounts().isEmpty()}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>계좌번호</th>
+                            <th>상태</th>
+                            <th>잔액</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="account : ${dashboard.accounts()}">
+                            <td th:text="${account.accountNumber()}">-</td>
+                            <td th:text="${account.status() ?: '-'}">-</td>
+                            <td th:text="${account.balance() != null ? #numbers.formatInteger(account.balance(), 0, 'COMMA') + ' 원' : '-'}">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty" th:if="${dashboard.accounts() == null or dashboard.accounts().isEmpty()}">등록된 계좌가 없습니다.</div>
+        </div>
+    </section>
+
+    <!-- Cards & Transactions -->
+    <section class="panel-grid">
+        <div class="panel">
+            <div class="panel__header">
+                <h2>카드 요약</h2>
+                <span class="panel__meta">
+                    내 카드 <span th:text="${#numbers.formatInteger(dashboard.cards().cardCount(), 0, 'COMMA')}">0</span>개
+                    &middot; 평균 <span th:text="${dashboard.cards().averageCardsPerUser() != null ? #numbers.formatDecimal(dashboard.cards().averageCardsPerUser(), 0, 1) : '-'}">0</span>개
+                </span>
+            </div>
+            <div class="split-grid">
+                <div>
+                    <h3>상태</h3>
+                    <ul class="reason-list" th:if="${dashboard.cards().statusCounts() != null and !dashboard.cards().statusCounts().isEmpty()}">
+                        <li th:each="entry : ${dashboard.cards().statusCounts()}">
+                            <span th:text="${entry.key}">-</span>
+                            <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                        </li>
+                    </ul>
+                    <div class="empty" th:if="${dashboard.cards().statusCounts() == null or dashboard.cards().statusCounts().isEmpty()}">상태 데이터가 없습니다.</div>
+                </div>
+                <div>
+                    <h3>유형</h3>
+                    <ul class="reason-list" th:if="${dashboard.cards().typeCounts() != null and !dashboard.cards().typeCounts().isEmpty()}">
+                        <li th:each="entry : ${dashboard.cards().typeCounts()}">
+                            <span th:text="${entry.key}">-</span>
+                            <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                        </li>
+                    </ul>
+                    <div class="empty" th:if="${dashboard.cards().typeCounts() == null or dashboard.cards().typeCounts().isEmpty()}">유형 데이터가 없습니다.</div>
+                </div>
+                <div>
+                    <h3>발급사</h3>
+                    <ul class="reason-list" th:if="${dashboard.cards().issuerCounts() != null and !dashboard.cards().issuerCounts().isEmpty()}">
+                        <li th:each="entry : ${dashboard.cards().issuerCounts()}">
+                            <span th:text="${entry.key}">-</span>
+                            <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                        </li>
+                    </ul>
+                    <div class="empty" th:if="${dashboard.cards().issuerCounts() == null or dashboard.cards().issuerCounts().isEmpty()}">발급사 데이터가 없습니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel__header">
+                <h2>거래 요약</h2>
+                <span class="panel__meta">유형 분포 및 추이</span>
+            </div>
+            <ul class="reason-list" th:if="${dashboard.transactions().typeCounts() != null and !dashboard.transactions().typeCounts().isEmpty()}">
+                <li th:each="entry : ${dashboard.transactions().typeCounts()}">
+                    <span th:text="${entry.key}">-</span>
+                    <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                </li>
+            </ul>
+            <div class="empty" th:if="${dashboard.transactions().typeCounts() == null or dashboard.transactions().typeCounts().isEmpty()}">거래 유형 데이터가 없습니다.</div>
+
+            <div class="table-wrap" th:if="${dashboard.transactions().dailyCounts() != null and !dashboard.transactions().dailyCounts().isEmpty()}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>건수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="point : ${dashboard.transactions().dailyCounts()}">
+                            <td th:text="${#temporals.format(point.date(), 'yyyy-MM-dd')}">-</td>
+                            <td th:text="${#numbers.formatInteger(point.count(), 0, 'COMMA')}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty" th:if="${dashboard.transactions().dailyCounts() == null or dashboard.transactions().dailyCounts().isEmpty()}">거래 추이가 없습니다.</div>
+        </div>
+    </section>
+
+    <!-- Recent Transactions -->
+    <section class="panel">
+        <div class="panel__header">
+            <h2>최근 거래 내역</h2>
+            <span class="panel__meta">최근 거래 요약</span>
+        </div>
+        <div class="table-wrap" th:if="${dashboard.transactions().recentTransactions() != null and !dashboard.transactions().recentTransactions().isEmpty()}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>시각</th>
+                        <th>금액</th>
+                        <th>가맹점</th>
+                        <th>지역</th>
+                        <th>상대계좌</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="tx : ${dashboard.transactions().recentTransactions()}">
+                        <td th:text="${tx.transactionAt() != null ? #temporals.format(tx.transactionAt(), 'MM-dd HH:mm') : '-'}">-</td>
+                        <td th:text="${tx.amount() != null ? #numbers.formatInteger(tx.amount(), 0, 'COMMA') + ' 원' : '-'}">-</td>
+                        <td th:text="${tx.merchantCategory() ?: '-'}">-</td>
+                        <td th:text="${tx.location() ?: '-'}">-</td>
+                        <td th:text="${tx.targetAccountNumber() ?: '-'}">-</td>
+                        <td th:text="${tx.description() ?: '-'}">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${dashboard.transactions().recentTransactions() == null or dashboard.transactions().recentTransactions().isEmpty()}">최근 거래가 없습니다.</div>
+    </section>
+
+    <!-- Detection Summary -->
+    <section class="panel">
+        <div class="panel__header">
+            <h2>탐지 요약</h2>
+            <span class="panel__meta">내 거래 탐지 현황</span>
+        </div>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <span class="stat-label">탐지 건수</span>
+                <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.detections().detectedCount(), 0, 'COMMA')}">0</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">사기 확정</span>
+                <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.detections().fraudCount(), 0, 'COMMA')}">0</strong>
+                <span class="stat-hint" th:text="'확정율 ' + (${dashboard.detections().fraudRate() != null ? #numbers.formatDecimal(dashboard.detections().fraudRate() * 100, 0, 2) + '%' : '-'})">확정율 0%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">최신 탐지 시각</span>
+                <strong class="stat-value" th:text="${dashboard.detections().latestDetectionAt() != null ? #temporals.format(dashboard.detections().latestDetectionAt(), 'MM-dd HH:mm') : '-'}">-</strong>
+            </div>
+        </div>
+    </section>
+</div>
+
+</body>
+</html>

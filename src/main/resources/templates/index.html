@@ -52,7 +52,15 @@
         <div class="menu-item">사기 계좌 신고</div>
 
         <div class="menu-item">
-            <a th:href="@{/admin/dashboard}" style="text-decoration:none; color:inherit;">사기 통계 대시보드</a>
+            <span>사기 통계</span>
+            <div class="dropdown">
+                <a th:href="@{/stats/dashboard}">내 통계 대시보드</a>
+                <a th:href="@{/stats/snapshots}">주간 스냅샷</a>
+                <div sec:authorize="hasRole('ADMIN')" style="border-top: 1px solid #e5e7eb; margin-top: 5px; padding-top: 5px;">
+                    <a th:href="@{/stats/admin/dashboard}">관리자 대시보드</a>
+                    <a th:href="@{/stats/admin/snapshots}">스냅샷 관리</a>
+                </div>
+            </div>
         </div>
 
         <div class="menu-item">고객지원</div>

@@ -40,8 +40,8 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/join", "/pay/**", "/error").permitAll()
-                        // 관리자 뷰와 API 모두 ROLE_ADMIN 체크
                         .requestMatchers("/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/mypage/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
