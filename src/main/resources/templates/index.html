@@ -49,7 +49,14 @@
             </div>
         </div>
 
-        <div class="menu-item">사기 계좌 신고</div>
+        <div class="menu-item">
+            <span>사기 계좌 신고</span>
+            <div class="dropdown">
+                <a th:href="@{/report/form}">사기 신고</a>
+                <a th:href="@{/report/list}">신고 조회</a>
+                <a th:href="@{/report/unblock}">계좌 차단 해제 신청</a>
+            </div>
+        </div>
 
         <div class="menu-item">
             <span>사기 통계</span>
