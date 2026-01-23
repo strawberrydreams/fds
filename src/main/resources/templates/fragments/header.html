@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:fragment="common_head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">FDS BANK</title>
+
+    <th:block th:replace="~{chatbot/fds-chatbot-widget :: styles}"></th:block>
+
+    <style>
+        /* [공통 스타일 전체] */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; }
+
+        /* 네비게이션 바 */
+        .navbar { background-color: #ffffff !important; border-bottom: 1px solid #e0e0e0; padding: 0 50px; display: flex; align-items: center; height: 70px; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: bold; color: #007bff; text-decoration: none; display: flex; align-items: center; flex-shrink: 0; margin-right: 40px; }
+        .main-menu { display: flex; gap: 10px; height: 100%; flex-grow: 1; align-items: center; }
+        .menu-item { position: relative; display: flex; align-items: center; font-weight: 600; color: #444; cursor: pointer; font-size: 15px; height: 100%; background: transparent !important; padding: 0 15px; transition: color 0.2s; }
+        .menu-item:hover { color: #007bff; background: rgba(0, 123, 255, 0.05) !important; }
+        .menu-item > a { text-decoration: none; color: inherit; display: flex; align-items: center; height: 100%; }
+
+        /* 드롭다운 메뉴 */
+        .dropdown { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background-color: white; border: 1px solid #d1d5db; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; flex-direction: column; padding: 10px 0; border-radius: 8px; }
+        .menu-item:hover .dropdown { display: flex; }
+        .dropdown a { display: block; text-decoration: none; color: #666; font-size: 14px; padding: 12px 20px; white-space: nowrap; transition: background 0.2s; }
+        .dropdown a:hover { background-color: #f3f4f6; color: #007bff; }
+
+        /* 사용자 섹션 */
+        .user-section { margin-left: auto; font-size: 14px; color: #666; display: flex; align-items: center; gap: 15px; flex-shrink: 0; background: transparent !important; }
+        .logout-link { color: #ff4757; text-decoration: none; font-weight: bold; }
+        .login-link { color: #007bff; text-decoration: none; font-weight: bold; }
+        .mypage-link { color: #2ecc71; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+
+<th:block th:fragment="menu_and_widget">
+    <nav class="navbar">
+        <a th:href="@{/}" class="logo">🏦 FDS BANK</a>
+
+        <div class="main-menu">
+            <div class="menu-item">
+                <span>입출금 거래 · 계좌 관리</span>
+                <div class="dropdown">
+                    <a th:href="@{/account/terms}">계좌 생성</a>
+                    <a th:href="@{/account/deposit}">입금</a>
+                    <a th:href="@{/account/transfer}">이체</a>
+                    <a th:href="@{/account/withdraw}">인출</a>
+                    <a th:href="@{/account/list}">계좌 조회</a>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <span>카드 관리</span>
+                <div class="dropdown">
+                    <a th:href="@{/card/terms}">카드 발급</a>
+                    <a th:href="@{/card/list}">카드 정보 및 변경</a>
+                    <a th:href="@{/card/simulator}">카드 내역 확인</a>
+                    <a th:href="@{/card/terminate}">카드 해지</a>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <span>사기 계좌 신고</span>
+                <div class="dropdown">
+                    <a th:href="@{/report/form}">사기 신고</a>
+                    <a th:href="@{/report/list}">신고 조회</a>
+                    <a th:href="@{/report/unblock}">계좌 차단 해제 신청</a>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <span>통계 대시보드</span>
+                <div class="dropdown">
+                    <a th:href="@{/stats/dashboard}">내 통계 대시보드</a>
+                    <a th:href="@{/stats/snapshots}">주간 스냅샷</a>
+                    <div sec:authorize="hasRole('ADMIN')" style="border-top: 1px solid #e5e7eb; margin-top: 5px; padding-top: 5px;">
+                        <a th:href="@{/stats/admin/dashboard}">관리자 대시보드</a>
+                        <a th:href="@{/stats/admin/snapshots}">스냅샷 관리</a>
+                        <a th:href="@{/stats/admin/codebook}">코드북 관리</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <a th:href="@{/support}">고객지원</a>
+            </div>
+
+            <div class="menu-item" sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/users}" style="text-decoration:none; color:inherit;">회원 관리</a>
+            </div>
+        </div>
+
+        <div class="user-section">
+            <div sec:authorize="isAuthenticated()">
+                👤 <span th:text="${#authentication.name}" style="font-weight: bold;">사용자</span>님
+                <a th:href="@{/mypage}" class="mypage-link" style="margin-left: 15px;">내 정보</a>
+                <a th:href="@{/logout}" class="logout-link" style="margin-left: 10px;">로그아웃</a>
+            </div>
+            <div sec:authorize="isAnonymous()">
+                <a th:href="@{/login}" class="login-link">로그인</a>
+                <a th:href="@{/join}" style="margin-left:10px; text-decoration:none; color:#666;">회원가입</a>
+            </div>
+        </div>
+    </nav>
+    <th:block th:replace="~{chatbot/fds-chatbot-widget :: widget}"></th:block>
+</th:block>
+
+</html>

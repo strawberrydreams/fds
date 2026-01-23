@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>카드 이용 내역 - FDS BANK</title>
-    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 카드 이용 내역')}"></th:block>
     <style>
         .container { max-width: 900px; margin: 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { color: #1a1a1a; margin-bottom: 30px; border-bottom: 3px solid #007bff; padding-bottom: 15px; }
@@ -27,7 +27,8 @@
     </style>
 </head>
 <body>
-<div th:replace="~{index :: menu}"></div>
+
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
 
 <div class="container">
     <h2>🧾 카드 이용 내역</h2>
@@ -54,5 +55,6 @@
         </div>
     </div>
 </div>
+
 </body>
 </html>

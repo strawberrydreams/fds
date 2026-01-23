@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('정보 수정 | 안심거래')}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('정보 수정 | 안심거래')}"></th:block>
     <style>
         :root { --primary-color: #001a72; --bg-color: #f0f2f5; }
         body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; }
@@ -23,7 +23,7 @@
 </head>
 <body>
 
-<nav th:replace="~{index :: menu}"></nav>
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="container">
     <div class="card">

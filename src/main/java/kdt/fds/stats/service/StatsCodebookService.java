@@ -8,6 +8,8 @@ import kdt.fds.stats.repository.StatsCodebookRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -69,6 +71,7 @@ public class StatsCodebookService {
 
         StatsCodebook entity = new StatsCodebook();
         applyAllFields(entity, request);
+        applyCreateAudit(entity, request);
         StatsCodebook saved = save(entity);
         return StatsCodebookResponseDTO.from(saved);
     }
@@ -86,6 +89,7 @@ public class StatsCodebookService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Codebook not found"));
 
         applyAllFields(entity, request);
+        applyUpdateAudit(entity, request);
         StatsCodebook saved = save(entity);
         return StatsCodebookResponseDTO.from(saved);
     }
@@ -109,6 +113,40 @@ public class StatsCodebookService {
         entity.setSortOrder(request.sortOrder());
         entity.setActive(request.active());
         entity.setMetaJson(request.metaJson());
+    }
+
+    private void applyCreateAudit(StatsCodebook entity, StatsCodebookRequestDTO request) {
+        String actor = resolveActor();
+        if (entity.getCreatedBy() == null || entity.getCreatedBy().isBlank()) {
+            entity.setCreatedBy(actor);
+        }
+        entity.setUpdatedBy(actor);
+        entity.setChangeReason(normalizeReason(request.changeReason(), true));
+    }
+
+    private void applyUpdateAudit(StatsCodebook entity, StatsCodebookRequestDTO request) {
+        String actor = resolveActor();
+        entity.setUpdatedBy(actor);
+        entity.setChangeReason(normalizeReason(request.changeReason(), false));
+    }
+
+    private String resolveActor() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "unknown";
+        }
+        String name = authentication.getName();
+        if (name == null || name.isBlank() || "anonymousUser".equals(name)) {
+            return "unknown";
+        }
+        return name;
+    }
+
+    private String normalizeReason(String reason, boolean isCreate) {
+        if (reason == null || reason.isBlank()) {
+            return isCreate ? "신규 등록" : "관리자 수정";
+        }
+        return reason.trim();
     }
 
     private StatsCodebook save(StatsCodebook entity) {

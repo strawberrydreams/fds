@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>내 계좌 목록 - FDS BANK</title>
 
-    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 내 계좌 목록')}"></th:block>
 
     <style>
         /* 전체 스타일 초기화 및 배경 */
@@ -57,7 +57,7 @@
 </head>
 <body>
 
-<div th:replace="~{index :: menu}"></div>
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
 
 <div class="container">
     <h2>🏦 <span>내 계좌 목록</span></h2>

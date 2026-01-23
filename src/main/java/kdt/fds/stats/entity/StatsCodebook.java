@@ -76,6 +76,15 @@ public class StatsCodebook {
     @Column(name = "META_JSON")
     private String metaJson;
 
+    @Column(name = "CREATED_BY", length = 60)
+    private String createdBy;
+
+    @Column(name = "UPDATED_BY", length = 60)
+    private String updatedBy;
+
+    @Column(name = "CHANGE_REASON", length = 200)
+    private String changeReason;
+
     @Column(name = "CREATED_AT", nullable = false)
     private LocalDateTime createdAt;
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>정보 입력 및 계좌 개설 - FDS BANK</title>
-    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 정보 입력')}"></th:block>
     <style>
         .container { max-width: 500px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #333; margin-bottom: 30px; }
@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-<div th:replace="~{index :: menu}"></div>
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
 
 <div class="container">
     <h2>✍️ 정보 입력</h2>

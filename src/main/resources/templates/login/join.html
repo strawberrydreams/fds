@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('회원 가입 | 안심거래 서비스')}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('회원 가입 | 안심거래 서비스')}"></th:block>
     <style>
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f9; margin: 0; padding: 0; }
         .main-content { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 70px); padding: 40px 0; }
@@ -22,7 +22,7 @@
 </head>
 <body>
 
-<nav th:replace="~{index :: menu}"></nav>
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="main-content">
     <div class="join-container">
@@ -86,5 +86,6 @@
         </form>
     </div>
 </div>
+
 </body>
 </html>

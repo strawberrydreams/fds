@@ -1,5 +1,6 @@
 package kdt.fds.stats.controller;
 
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import kdt.fds.stats.dto.request.StatsSnapshotGenerateRequestDTO;
@@ -8,7 +9,12 @@ import kdt.fds.stats.dto.response.StatsSnapshotMetadataDTO;
 import kdt.fds.stats.service.AdminStatsDashboardService;
 import kdt.fds.stats.service.StatsSnapshotService;
 import kdt.fds.stats.vo.StatsSnapshotScope;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -89,6 +95,42 @@ public class StatsAdminViewController {
         }
 
         return "stats/adminsnapshots";
+    }
+
+    /**
+     * 스냅샷 JSON 파일을 다운로드한다.
+     * 스냅샷 목록에 존재하는 파일만 다운로드 가능하도록 제한한다.
+     */
+    @GetMapping("/snapshots/download")
+    public ResponseEntity<Resource> downloadSnapshot(
+            @RequestParam String snapshotId
+    ) {
+        List<StatsSnapshotMetadataDTO> snapshots = snapshotService.listSnapshots(StatsSnapshotScope.BUSINESS);
+        StatsSnapshotMetadataDTO snapshot = snapshots.stream()
+                .filter(item -> item.snapshotId().equals(snapshotId))
+                .findFirst()
+                .orElse(null);
+        if (snapshot == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path filePath = snapshotService.getSnapshotFilePath(StatsSnapshotScope.BUSINESS, snapshot.filename());
+        Resource resource = new FileSystemResource(filePath);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + snapshot.filename() + "\"")
+                .body(resource);
+    }
+
+    /**
+     * 관리자 코드북 관리 페이지를 렌더링한다.
+     * REST API를 사용해 코드북 CRUD를 수행한다.
+     */
+    @GetMapping("/codebook")
+    public String adminCodebook() {
+        return "stats/admincodebook";
     }
 
     /**

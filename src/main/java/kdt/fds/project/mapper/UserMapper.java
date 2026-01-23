@@ -55,4 +55,18 @@ public interface UserMapper {
     // 9. 회원 강제 삭제 (탈퇴 처리)
     @Delete("DELETE FROM USERS WHERE USER_ID = #{userId}")
     void deleteUser(String userId);
+
+    /**
+     * [추가된 부분] FormController의 update(memberDTO) 호출에 대응
+     * 기존의 개별 수정 메서드와 별개로 DTO 객체를 직접 받아 정보를 갱신합니다.
+     */
+    @Update("UPDATE USERS SET USER_EMAIL = #{userEmail}, USER_PW = #{userPw} WHERE USER_ID = #{userId}")
+    void update(MemberDTO memberDTO);
+
+    /**
+     * [추가된 부분] FormController의 deleteByUserId(userId) 호출에 대응
+     * 기존 deleteUser와 동일한 기능이나 메서드명을 컨트롤러 호출부와 일치시켰습니다.
+     */
+    @Delete("DELETE FROM USERS WHERE USER_ID = #{userId}")
+    void deleteByUserId(String userId);
 }

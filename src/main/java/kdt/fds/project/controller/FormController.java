@@ -17,9 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -49,6 +47,11 @@ public class FormController {
             model.addAttribute("loginUser", authentication.getName());
         }
         return "index";
+    }
+
+    @GetMapping("/support")
+    public String supportPage() {
+        return "support/support";
     }
 
     @GetMapping("/mypage")
@@ -98,7 +101,6 @@ public class FormController {
             log.error("마이페이지 에러 발생: ", e);
         }
 
-        // [확인 완료] templates/mypage/mypage.html 호출
         return "mypage/mypage";
     }
 
@@ -121,14 +123,62 @@ public class FormController {
     @GetMapping("/mypage/confirm")
     public String confirmPage() { return "mypage/mypage_confirm"; }
 
+    /**
+     * [추가] 405 에러 해결: 본인 확인 비밀번호 검증 처리
+     */
+    @PostMapping("/mypage/confirm")
+    public String processConfirm(@AuthenticationPrincipal User user, @RequestParam("currentPw") String currentPw, Model model) {
+        MemberDTO member = userMapper.findByUserId(user.getUsername());
+        if (passwordEncoder.matches(currentPw, member.getUserPw())) {
+            return "redirect:/mypage/edit";
+        } else {
+            model.addAttribute("msg", "비밀번호가 일치하지 않습니다.");
+            return "mypage/mypage_confirm";
+        }
+    }
+
     @GetMapping("/mypage/edit")
     public String editPage(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("member", userMapper.findByUserId(user.getUsername()));
         return "mypage/mypage_edit";
     }
 
+    /**
+     * [추가] 회원 정보 수정 처리
+     */
+    @PostMapping("/mypage/update")
+    public String updateMember(@AuthenticationPrincipal User user,
+                               @RequestParam("userEmail") String userEmail,
+                               @RequestParam(value = "newPw", required = false) String newPw,
+                               Model model) {
+        MemberDTO member = userMapper.findByUserId(user.getUsername());
+        member.setUserEmail(userEmail);
+
+        if (newPw != null && !newPw.isEmpty()) {
+            member.setUserPw(passwordEncoder.encode(newPw));
+        }
+
+        userMapper.update(member);
+        model.addAttribute("msg", "정보 수정이 완료되었습니다.");
+        model.addAttribute("member", member);
+        return "mypage/mypage_edit";
+    }
+
     @GetMapping("/withdraw")
     public String withdrawPage() { return "mypage/withdraw"; }
 
-
+    /**
+     * [추가] 회원 탈퇴 처리
+     */
+    @PostMapping("/withdraw")
+    public String processWithdraw(@AuthenticationPrincipal User user, @RequestParam("userPw") String userPw, Model model) {
+        MemberDTO member = userMapper.findByUserId(user.getUsername());
+        if (passwordEncoder.matches(userPw, member.getUserPw())) {
+            userMapper.deleteByUserId(user.getUsername());
+            return "redirect:/logout"; // 탈퇴 후 로그아웃 처리
+        } else {
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "mypage/withdraw";
+        }
+    }
 }

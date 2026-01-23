@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('가입 완료 | 안심거래 서비스')}"></th:block>
+    <meta charset="UTF-8">
+    <th:block th:replace="~{fragments/header :: common_head('가입 완료 | 안심거래 서비스')}"></th:block>
     <style>
         :root { --brand-blue: #007bff; } /* 파란색 고정 */
         body { font-family: 'Pretendard', sans-serif; background-color: #f4f7f9; margin: 0; }
@@ -18,7 +19,7 @@
 </head>
 <body>
 
-<nav th:replace="~{index :: menu}"></nav>
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="result-container">
     <div class="result-card">
@@ -36,5 +37,6 @@
         <a th:href="@{/login}" class="btn-home">로그인하러 가기</a>
     </div>
 </div>
+
 </body>
 </html>

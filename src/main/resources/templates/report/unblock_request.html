@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('차단 해제 신청 | FDS BANK')}"></th:block>
+    <meta charset="UTF-8">
+    <th:block th:replace="~{fragments/header :: common_head('차단 해제 신청 | FDS BANK')}"></th:block>
     <style>
         .main-content { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 70px); padding: 40px 0; }
         .unblock-container { background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 500px; }
@@ -15,7 +16,8 @@
     </style>
 </head>
 <body>
-<nav th:replace="~{index :: menu}"></nav>
+
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="main-content">
     <div class="unblock-container">
@@ -38,6 +40,7 @@
 
         if(!confirm("해당 계좌의 차단 해제를 신청하시겠습니까?")) return;
 
+        // [API 통신 로직 유지]
         fetch(`/api/reports/unblock/${acc}`, { method: 'PATCH' })
             .then(res => {
                 if(res.ok) {

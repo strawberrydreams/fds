@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>계좌 인출 - FDS BANK</title>
 
-    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 계좌 인출')}"></th:block>
 
     <style>
         .container { max-width: 600px; margin: 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -37,7 +37,7 @@
 </head>
 <body>
 
-<div th:replace="~{index :: menu}"></div>
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
 
 <div class="container">
     <h2>💸 계좌 인출</h2>
@@ -115,6 +115,9 @@
         </table>
     </div>
 
-
-</body>
+    <div class="footer-links">
+        <a th:href="@{/account/list}">← 계좌 목록으로</a>
+        <a th:href="@{/account/transfer}">송금하러 가기 →</a>
+    </div>
+</div> </body>
 </html>

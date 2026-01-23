@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('회원 탈퇴 | 안심거래 서비스')}"></th:block>
+    <meta charset="UTF-8">
+    <th:block th:replace="~{fragments/header :: common_head('회원 탈퇴 | 안심거래 서비스')}"></th:block>
     <style>
         body { font-family: 'Pretendard', sans-serif; background: #f4f7f9; margin: 0; }
         .withdraw-container { max-width: 500px; margin: 80px auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; }
@@ -18,7 +19,7 @@
 </head>
 <body>
 
-<nav th:replace="~{index :: menu}"></nav>
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="withdraw-container">
     <h2>회원 탈퇴</h2>

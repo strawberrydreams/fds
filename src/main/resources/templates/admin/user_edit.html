@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('회원 정보 관리 | 관리자')}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('회원 정보 관리 | 관리자')}"></th:block>
     <style>
         :root { --brand-blue: #007bff; } /* 파란색 고정 */
         body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; margin: 0; }
@@ -29,7 +29,7 @@
 </head>
 <body>
 
-<nav th:replace="~{index :: menu}"></nav>
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="edit-container">
     <div class="edit-header">

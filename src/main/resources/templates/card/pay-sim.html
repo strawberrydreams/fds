@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>FDS BANK - 가상 결제 시뮬레이터</title>
-    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 가상 결제')}"></th:block>
     <style>
         .pay-container { max-width: 500px; margin: 60px auto; background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-top: 8px solid #007bff; }
         .merchant-badge { background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; font-weight: bold; color: #555; border: 1px dashed #ccc; }
@@ -15,7 +15,8 @@
     </style>
 </head>
 <body>
-<div th:replace="~{index :: menu}"></div>
+
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
 
 <div class="pay-container">
     <h2 style="text-align: center; margin-bottom: 10px;">🛒 가상 결제창</h2>
@@ -46,5 +47,6 @@
         * 실제 결제는 발생하지 않으며 테스트용 데이터만 생성됩니다.
     </p>
 </div>
+
 </body>
 </html>

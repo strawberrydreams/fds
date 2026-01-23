@@ -16,6 +16,9 @@ public record StatsCodebookResponseDTO(
         Integer sortOrder,
         boolean active,
         String metaJson,
+        String createdBy,
+        String updatedBy,
+        String changeReason,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -33,6 +36,9 @@ public record StatsCodebookResponseDTO(
                 entity.getSortOrder(),
                 entity.isActive(),
                 entity.getMetaJson(),
+                entity.getCreatedBy(),
+                entity.getUpdatedBy(),
+                entity.getChangeReason(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

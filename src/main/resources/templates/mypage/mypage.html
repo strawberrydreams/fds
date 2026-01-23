@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('마이페이지 | 안심거래 뱅킹')}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('마이페이지 | 안심거래 뱅킹')}"></th:block>
     <style>
         :root {
             --primary-color: #001a72;
@@ -60,7 +60,7 @@
 </head>
 <body>
 
-<nav th:replace="~{index :: menu}"></nav>
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="container">
     <section class="user-welcome" style="margin-bottom: 30px;">

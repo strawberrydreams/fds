@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>약관 동의 - FDS BANK</title>
-    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 약관 동의')}"></th:block>
     <style>
         .container { max-width: 600px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { color: #1a1a1a; text-align: center; border-bottom: 3px solid #007bff; padding-bottom: 15px; margin-bottom: 30px; }
@@ -29,7 +29,7 @@
     </style>
 </head>
 <body>
-<div th:replace="~{index :: menu}"></div>
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
 
 <div class="container">
     <h2>📜 약관 동의</h2>

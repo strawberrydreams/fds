@@ -141,6 +141,15 @@ public class StatsSnapshotService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public Path getSnapshotFilePath(StatsSnapshotScope scope, String filename) {
+        Path filePath = resolveDirectory(scope).resolve(filename);
+        if (!Files.exists(filePath)) {
+            throw new IllegalArgumentException("Snapshot file not found: " + filename);
+        }
+        return filePath;
+    }
+
     private SnapshotResult writeGeneralSnapshot(
             StatsDateRange range,
             LocalDateTime generatedAt,

@@ -24,7 +24,18 @@ public record StatsCodebookRequestDTO(
         String description,
 
         Integer sortOrder,
-        boolean active,
-        String metaJson
+        Boolean active,
+        String metaJson,
+
+        @Size(max = 200)
+        String changeReason
 ) {
+    /**
+     * JSON에서 active 필드가 누락된 경우 기본값 true를 적용한다.
+     */
+    public StatsCodebookRequestDTO {
+        if (active == null) {
+            active = true;
+        }
+    }
 }

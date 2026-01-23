@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
+    <th:block th:replace="~{fragments/header :: common_head('스냅샷 관리 | FDS')}"></th:block>
     <th:block th:replace="~{stats/stats-common :: stats_head('스냅샷 관리 | FDS')}"></th:block>
 </head>
 <body>
-<nav th:replace="~{index :: menu}"></nav>
+
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="stats-container">
-    <!-- Page Header -->
     <header class="stats-header">
         <div>
             <h1>스냅샷 관리</h1>
@@ -15,11 +16,9 @@
         </div>
     </header>
 
-    <!-- Alert Messages -->
     <div th:if="${successMessage}" class="banner banner--success" th:text="${successMessage}">성공 메시지</div>
     <div th:if="${errorMessage}" class="banner banner--error" th:text="${errorMessage}">에러 메시지</div>
 
-    <!-- Snapshot Generation Form -->
     <section class="panel">
         <div class="panel__header">
             <h2>스냅샷 생성</h2>
@@ -45,7 +44,6 @@
         </form>
     </section>
 
-    <!-- Snapshot List -->
     <section class="panel">
         <div class="panel__header">
             <h2>스냅샷 목록</h2>
@@ -53,17 +51,23 @@
         </div>
 
         <div class="snapshot-grid" th:if="${snapshots != null and !snapshots.isEmpty()}">
-            <a th:each="snapshot : ${snapshots}"
-               th:href="@{/stats/admin/snapshots(snapshotId=${snapshot.snapshotId()})}"
-               class="snapshot-card"
-               th:classappend="${selectedSnapshotId != null and selectedSnapshotId == snapshot.snapshotId()} ? 'selected' : ''">
-                <div class="snapshot-title" th:text="${#temporals.format(snapshot.fromDate(), 'yyyy-MM-dd')} + ' ~ ' + ${#temporals.format(snapshot.toDate(), 'yyyy-MM-dd')}">2024-01-01 ~ 2024-01-07</div>
-                <div class="snapshot-meta">
-                    <span th:if="${snapshot.generatedAt() != null}" th:text="'생성: ' + ${#temporals.format(snapshot.generatedAt(), 'yyyy-MM-dd HH:mm')}">생성: 2024-01-08 00:00</span>
-                    <br>
-                    <span th:text="'Scope: ' + ${snapshot.scope()}">Scope: BUSINESS</span>
+            <div th:each="snapshot : ${snapshots}"
+                 class="snapshot-card"
+                 th:classappend="${selectedSnapshotId != null and selectedSnapshotId == snapshot.snapshotId()} ? 'selected' : ''">
+                <a class="snapshot-link" th:href="@{/stats/admin/snapshots(snapshotId=${snapshot.snapshotId()})}">
+                    <div class="snapshot-title" th:text="${#temporals.format(snapshot.fromDate(), 'yyyy-MM-dd')} + ' ~ ' + ${#temporals.format(snapshot.toDate(), 'yyyy-MM-dd')}">2024-01-01 ~ 2024-01-07</div>
+                    <div class="snapshot-meta">
+                        <span th:if="${snapshot.generatedAt() != null}" th:text="'생성: ' + ${#temporals.format(snapshot.generatedAt(), 'yyyy-MM-dd HH:mm')}">생성: 2024-01-08 00:00</span>
+                        <br>
+                        <span th:text="'Scope: ' + ${snapshot.scope()}">Scope: BUSINESS</span>
+                    </div>
+                </a>
+                <div class="snapshot-actions">
+                    <a class="snapshot-download"
+                       th:href="@{/stats/admin/snapshots/download(snapshotId=${snapshot.snapshotId()})}"
+                       download>JSON 다운로드</a>
                 </div>
-            </a>
+            </div>
         </div>
 
         <div class="empty" th:if="${snapshots == null or snapshots.isEmpty()}">
@@ -71,21 +75,18 @@
         </div>
     </section>
 
-    <!-- Selected Snapshot Detail -->
     <section class="panel" th:if="${snapshotDetail != null}">
         <div class="panel__header">
             <h2>스냅샷 상세</h2>
             <span class="panel__meta" th:text="${selectedSnapshotId}">Snapshot ID</span>
         </div>
 
-        <!-- Basic Info -->
         <div class="muted" style="margin-bottom: 20px;">
             <div>기간: <strong th:text="${snapshotDetail['fromDate']} + ' ~ ' + ${snapshotDetail['toDate']}">-</strong></div>
             <div>생성 시각: <strong th:text="${snapshotDetail['generatedAt'] ?: '-'}">-</strong></div>
             <div>스코프: <strong th:text="${snapshotDetail['scope'] ?: '-'}">-</strong></div>
         </div>
 
-        <!-- Dashboard Summary (if available) -->
         <div th:if="${snapshotDetail['dashboard'] != null}">
             <h3>대시보드 요약</h3>
 
@@ -116,7 +117,6 @@
                 </div>
             </div>
 
-            <!-- Users Section -->
             <div th:if="${snapshotDetail['dashboard']['users'] != null}" style="margin-top: 20px;">
                 <h3>사용자 통계</h3>
                 <div class="split-grid">
@@ -141,7 +141,6 @@
                 </div>
             </div>
 
-            <!-- Detection Section -->
             <div th:if="${snapshotDetail['dashboard']['detections'] != null}" style="margin-top: 20px;">
                 <h3>탐지 통계</h3>
                 <div class="split-grid">
@@ -168,7 +167,6 @@
         </div>
     </section>
 
-    <!-- No Selection Message -->
     <section class="panel" th:if="${snapshotDetail == null and snapshots != null and !snapshots.isEmpty()}">
         <div class="empty">
             스냅샷을 선택하면 상세 정보가 표시됩니다.

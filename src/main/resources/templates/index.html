@@ -1,93 +1,87 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:fragment="common_head(title)">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">FDS BANK</title>
+<head>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 홈')}"></th:block>
+
     <style>
-        /* 기존 스타일 유지 */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; }
-        .navbar { background-color: #ffffff !important; border-bottom: 1px solid #e0e0e0; padding: 0 50px; display: flex; align-items: center; height: 70px; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; z-index: 1000; }
-        .logo { font-size: 22px; font-weight: bold; color: #007bff; text-decoration: none; display: flex; align-items: center; flex-shrink: 0; margin-right: 40px; }
-        .main-menu { display: flex; gap: 10px; height: 100%; flex-grow: 1; align-items: center; }
-        .menu-item { position: relative; display: flex; align-items: center; font-weight: 600; color: #444; cursor: pointer; font-size: 15px; height: 100%; background: transparent !important; padding: 0 15px; transition: color 0.2s; }
-        .menu-item:hover { color: #007bff; background: rgba(0, 123, 255, 0.05) !important; }
-        .dropdown { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background-color: white; border: 1px solid #d1d5db; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; flex-direction: column; padding: 10px 0; border-radius: 8px; }
-        .menu-item:hover .dropdown { display: flex; }
-        .dropdown a { display: block; text-decoration: none; color: #666; font-size: 14px; padding: 12px 20px; white-space: nowrap; transition: background 0.2s; }
-        .dropdown a:hover { background-color: #f3f4f6; color: #007bff; }
-        .user-section { margin-left: auto; font-size: 14px; color: #666; display: flex; align-items: center; gap: 15px; flex-shrink: 0; background: transparent !important; }
-        .logout-link { color: #ff4757; text-decoration: none; font-weight: bold; }
-        .login-link { color: #007bff; text-decoration: none; font-weight: bold; }
-        .mypage-link { color: #2ecc71; text-decoration: none; font-weight: bold; }
+        /* 홈 전용 스타일 */
+        .home-main { max-width: 1120px; margin: 0 auto; padding: 64px 24px 90px; display: flex; flex-direction: column; gap: 70px; }
+        .hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; align-items: center; }
+        .hero-eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 12px; color: #475569; margin-bottom: 12px; }
+        .hero-title { font-size: clamp(32px, 4vw, 52px); font-weight: 800; line-height: 1.1; margin-bottom: 16px; color: #0f172a; }
+        .hero-title span { color: #0ea5a4; }
+        .hero-desc { font-size: 17px; line-height: 1.7; color: #475569; margin-bottom: 24px; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 22px; border-radius: 999px; border: 1px solid transparent; font-weight: 600; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+        .btn.primary { background: #0ea5a4; color: #fff; box-shadow: 0 10px 24px rgba(14, 165, 164, 0.25); }
+        .btn.ghost { background: #fff; border-color: #e2e8f0; color: #0f172a; }
+        .btn:hover { transform: translateY(-2px); }
+
+        .hero-card { background: linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.65)); border: 1px solid rgba(226, 232, 240, 0.9); border-radius: 24px; padding: 28px; box-shadow: 0 30px 60px rgba(15, 23, 42, 0.1); backdrop-filter: blur(8px); }
+        .metric { display: grid; gap: 8px; padding: 18px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; margin-bottom: 14px; }
+        .metric .label { font-size: 12px; color: #475569; letter-spacing: 0.08em; text-transform: uppercase; }
+        .metric strong { font-size: 18px; color: #0f172a; }
+        .metric p { font-size: 14px; color: #475569; line-height: 1.5; margin-top: 5px; }
+
+        .reveal { animation: floatIn 0.8s ease-out both; }
+        @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
-<nav th:fragment="menu" class="navbar">
-    <a th:href="@{/}" class="logo">🏦 FDS BANK</a>
+<body style="background: radial-gradient(900px 500px at 12% -10%, #e0f2fe 0%, rgba(224, 242, 254, 0) 60%), #f8fafc;">
 
-    <div class="main-menu">
-        <div class="menu-item">
-            <span>입출금 거래 · 계좌 관리</span>
-            <div class="dropdown">
-                <a th:href="@{/account/terms}">계좌 생성</a>
-                <a th:href="@{/account/deposit}">입금</a>
-                <a th:href="@{/account/transfer}">이체</a>
-                <a th:href="@{/account/withdraw}">인출</a>
-                <a th:href="@{/account/list}">계좌 조회</a>
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
+
+<main class="home-main">
+    <section class="hero reveal">
+        <div class="hero-text">
+            <p class="hero-eyebrow">안심거래 뱅킹</p>
+            <h1 class="hero-title">
+                FDS BANK
+                <span>안심 거래 및 실시간 이상거래 탐지</span>
+            </h1>
+            <p class="hero-desc">
+                Rule-based 및 AI 기반 탐지로 이상거래를 빠르게 분류하고,
+                사기 신고와 블랙리스트 관리로 피해 확산을 차단하는 안심거래 서비스입니다.
+            </p>
+            <div class="hero-actions">
+                <a th:href="@{/login}" class="btn primary">로그인</a>
+                <a th:href="@{/account/terms}" class="btn ghost">계좌 만들기</a>
             </div>
         </div>
 
-        <div class="menu-item">
-            <span>카드 관리</span>
-            <div class="dropdown">
-                <a th:href="@{/card/terms}">카드 발급</a>
-                <a th:href="@{/card/list}">카드 정보 및 변경</a>
-                <a th:href="@{/card/simulator}">카드 내역 확인</a>
-                <a th:href="@{/card/terminate}">카드 해지</a>
+        <div class="hero-card">
+            <div class="metric">
+                <span class="label">3단계 탐지 파이프라인</span>
+                <strong>블랙리스트 · 한도 · AI 분석</strong>
+                <p>거래 요청 시 블랙리스트 확인 후 룰·AI 탐지를 통해 실시간 리스크를 정밀 분석합니다.</p>
+            </div>
+            <div class="metric">
+                <span class="label">Secure Action</span>
+                <strong>보류 · 승인 · 거절의 균형</strong>
+                <p>의심 거래는 관리자 판단 전까지 안전하게 보류되어 자산 피해를 예방합니다.</p>
             </div>
         </div>
+    </section>
 
-        <div class="menu-item">
-            <span>사기 계좌 신고</span>
-            <div class="dropdown">
-                <a th:href="@{/report/form}">사기 신고</a>
-                <a th:href="@{/report/list}">신고 조회</a>
-                <a th:href="@{/report/unblock}">계좌 차단 해제 신청</a>
-            </div>
+    <section class="reveal" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 50px;">
+        <div style="padding: 24px; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 20px rgba(0,0,0,0.02);">
+            <div style="font-size: 24px; margin-bottom: 12px;">🛡️</div>
+            <h3 style="font-size: 18px; margin-bottom: 8px;">실시간 탐지</h3>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6;">거래 발생 즉시 FDS 엔진이 개입하여 이상 신호를 감지합니다.</p>
         </div>
+        <div style="padding: 24px; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 20px rgba(0,0,0,0.02);">
+            <div style="font-size: 24px; margin-bottom: 12px;">🚫</div>
+            <h3 style="font-size: 18px; margin-bottom: 8px;">동적 차단</h3>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6;">신고된 의심 계좌를 즉시 차단하여 금융 사고를 방지합니다.</p>
+        </div>
+        <div style="padding: 24px; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 20px rgba(0,0,0,0.02);">
+            <div style="font-size: 24px; margin-bottom: 12px;">⚙️</div>
+            <h3 style="font-size: 18px; margin-bottom: 8px;">유연한 정책</h3>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6;">운영 상황에 따라 탐지 룰과 임계치를 동적으로 조정합니다.</p>
+        </div>
+    </section>
+</main>
 
-        <div class="menu-item">
-            <span>사기 통계</span>
-            <div class="dropdown">
-                <a th:href="@{/stats/dashboard}">내 통계 대시보드</a>
-                <a th:href="@{/stats/snapshots}">주간 스냅샷</a>
-                <div sec:authorize="hasRole('ADMIN')" style="border-top: 1px solid #e5e7eb; margin-top: 5px; padding-top: 5px;">
-                    <a th:href="@{/stats/admin/dashboard}">관리자 대시보드</a>
-                    <a th:href="@{/stats/admin/snapshots}">스냅샷 관리</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-item">고객지원</div>
-
-        <div class="menu-item" sec:authorize="hasRole('ADMIN')">
-            <a th:href="@{/admin/users}" style="text-decoration:none; color:inherit;">회원 관리</a>
-        </div>
-    </div>
-
-    <div class="user-section">
-        <div sec:authorize="isAuthenticated()">
-            👤 <span th:text="${#authentication.name}" style="font-weight: bold;">사용자</span>님
-            <a th:href="@{/mypage}" class="mypage-link" style="margin-left: 15px;">내 정보</a>
-            <a th:href="@{/logout}" class="logout-link" style="margin-left: 10px;">로그아웃</a>
-        </div>
-        <div sec:authorize="isAnonymous()">
-            <a th:href="@{/login}" class="login-link">로그인</a>
-            <a th:href="@{/join}" style="margin-left:10px; text-decoration:none; color:#666;">회원가입</a>
-        </div>
-    </div>
-</nav>
 </body>
 </html>

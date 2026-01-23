@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <title>입금하기 - FDS BANK</title>
-
-    <th:block th:replace="~{index :: common_head('FDS BANK - ' + ${title})}"></th:block>
+    <th:block th:replace="~{fragments/header :: common_head('입금하기')}"></th:block>
 
     <style>
         /* 본문 전용 스타일 (입금 페이지 특화) */
@@ -19,7 +16,6 @@
 
         h2 { color: #28a745; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #28a745; padding-bottom: 15px; }
 
-        /* 계좌 선택 박스 스타일링 */
         .form-group select {
             width: 100%;
             padding: 12px;
@@ -83,7 +79,7 @@
 </head>
 <body>
 
-<div th:replace="~{index :: menu}"></div>
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
 
 <div class="container">
     <h2>💰 입금하기</h2>

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:replace="~{index :: common_head('사기 신고 접수 | FDS BANK')}"></th:block>
+    <meta charset="UTF-8">
+    <th:block th:replace="~{fragments/header :: common_head('사기 신고 접수 | FDS BANK')}"></th:block>
 
     <style>
         .main-content {
@@ -78,7 +79,7 @@
 </head>
 <body>
 
-<nav th:replace="~{index :: menu}"></nav>
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
 
 <div class="main-content">
     <div class="report-container">
@@ -116,7 +117,6 @@
             return;
         }
 
-        // [4] 보안 토큰 및 헤더 구성
         const headers = { 'Content-Type': 'application/json' };
         const csrfMeta = document.querySelector('meta[name="_csrf"]');
         const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
@@ -125,21 +125,18 @@
             headers[csrfHeaderMeta.content] = csrfMeta.content;
         }
 
-        // [5] 서버와 통신 (POST /api/reports)
         fetch('/api/reports', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({ account: account, reason: reason })
         })
             .then(res => {
-                // 응답이 JSON이 아닐 경우(500 에러 등)를 대비한 예외 처리
                 if (!res.ok) {
                     return res.text().then(text => { throw new Error(text) });
                 }
                 return res.json();
             })
             .then(data => {
-                // 서버에서 보낸 message와 count 활용
                 alert(data.message + (data.count ? "\n(현재 " + data.count + "회 신고됨)" : ""));
                 location.href = "/report/list";
             })

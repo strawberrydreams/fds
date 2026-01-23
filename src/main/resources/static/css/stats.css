@@ -280,15 +280,37 @@
     border-left: 3px solid transparent;
 }
 
+.admin-sidebar .nav-title {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.admin-sidebar .nav-desc {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #9ca3af;
+}
+
 .admin-sidebar .nav-item:hover {
     background: #374151;
     color: white;
+}
+
+.admin-sidebar .nav-item:hover .nav-desc {
+    color: #e5e7eb;
 }
 
 .admin-sidebar .nav-item.active {
     background: #374151;
     color: white;
     border-left-color: #3b82f6;
+}
+
+.admin-sidebar .nav-item.active .nav-desc {
+    color: #e5e7eb;
 }
 
 .admin-content {
@@ -339,6 +361,37 @@
 .snapshot-card.selected {
     border-color: #3b82f6;
     background: #eff6ff;
+}
+
+.snapshot-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.snapshot-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.snapshot-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #374151;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.snapshot-download:hover {
+    background: #e5e7eb;
 }
 
 .snapshot-card .snapshot-title {
