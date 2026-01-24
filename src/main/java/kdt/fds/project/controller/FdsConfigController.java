@@ -46,7 +46,7 @@ public class FdsConfigController {
 
             // 임계치(Slider) 전용 변환 로직 (필요 시)
             // 만약 프론트에서 0~100으로 보내고 key가 임계치라면 0.x로 변환
-            if (key.equals("FRAUD_THRESHOLD") && Double.parseDouble(value) > 1.0) {
+            if (key.equals("THRESHOLD") && Double.parseDouble(value) > 1.0) {
                 value = String.valueOf(Double.parseDouble(value) / 100.0);
             }
 
