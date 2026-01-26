@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments/header :: common_head('관리자 통계 대시보드 | FDS')}"></th:block>
+    <th:block th:replace="~{stats/stats-common :: stats_head('관리자 통계 대시보드 | FDS')}"></th:block>
+</head>
+<body>
+
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
+
+<div class="admin-layout">
+    <nav class="admin-sidebar">
+        <a class="nav-item" th:classappend="${activeTab == 'overview'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='overview')}">
+            <span class="nav-title">개요</span>
+            <span class="nav-desc">전체 규모와 핵심 지표 요약</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'users'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='users')}">
+            <span class="nav-title">사용자</span>
+            <span class="nav-desc">성별·연령 등 사용자 분포</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'accounts'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='accounts')}">
+            <span class="nav-title">계좌</span>
+            <span class="nav-desc">계좌 상태·잔액 통계</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'cards'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='cards')}">
+            <span class="nav-title">카드</span>
+            <span class="nav-desc">상태·유형·발급사 분포</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'transactions'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='transactions')}">
+            <span class="nav-title">거래</span>
+            <span class="nav-desc">거래량·금액·유형 통계</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'detections'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='detections')}">
+            <span class="nav-title">탐지</span>
+            <span class="nav-desc">탐지 건수·확정률 분석</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'reports'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='reports')}">
+            <span class="nav-title">신고</span>
+            <span class="nav-desc">신고 상태·사유 분포</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'blacklist'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='blacklist')}">
+            <span class="nav-title">블랙리스트</span>
+            <span class="nav-desc">차단 계좌 현황과 연관 지표</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'reference'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='reference')}">
+            <span class="nav-title">기준 데이터</span>
+            <span class="nav-desc">코드북·설정값 관리 현황</span>
+        </a>
+        <a class="nav-item" th:classappend="${activeTab == 'cross'} ? 'active' : ''"
+           th:href="@{/stats/admin/dashboard(fromDate=${fromDate}, toDate=${toDate}, tab='cross')}">
+            <span class="nav-title">연관 분석</span>
+            <span class="nav-desc">집단별·교차 지표 비교</span>
+        </a>
+    </nav>
+
+    <main class="admin-content">
+        <header class="stats-header">
+            <div>
+                <h1>관리자 대시보드</h1>
+                <p class="subtitle">
+                    주간 집계 &middot; 최근 7일
+                </p>
+            </div>
+            <div class="controls">
+                <form th:action="@{/stats/admin/dashboard}" method="get" class="form-row">
+                    <div class="form-group">
+                        <label>시작일</label>
+                        <input type="date" name="fromDate" th:value="${#temporals.format(fromDate, 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="form-group">
+                        <label>종료일</label>
+                        <input type="date" name="toDate" th:value="${#temporals.format(toDate, 'yyyy-MM-dd')}">
+                    </div>
+                    <input type="hidden" name="tab" th:value="${activeTab}">
+                    <button type="submit" class="btn btn-primary">조회</button>
+                </form>
+            </div>
+        </header>
+
+        <div class="tab-content" th:classappend="${activeTab == 'overview'} ? 'active' : ''">
+            <section class="stat-grid">
+                <div class="stat-card">
+                    <span class="stat-label">총 사용자</span>
+                    <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.users().totalUsers(), 0, 'COMMA')}">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">총 계좌</span>
+                    <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.accounts().totalAccounts(), 0, 'COMMA')}">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">총 카드</span>
+                    <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.cards().totalCards(), 0, 'COMMA')}">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">거래 건수</span>
+                    <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.transactions().totalTransactions(), 0, 'COMMA')}">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">탐지 건수</span>
+                    <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.detections().detectionCount(), 0, 'COMMA')}">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label text-danger">누적 사기 신고</span>
+                    <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.fraudReports().totalReports(), 0, 'COMMA')}">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">사기 확정</span>
+                    <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.detections().fraudCount(), 0, 'COMMA')}">0</strong>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'users'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>사용자 통계</h2>
+                    <span class="panel__meta" th:text="'총 ' + ${#numbers.formatInteger(dashboard.users().totalUsers(), 0, 'COMMA')} + '명'">총 0명</span>
+                </div>
+                <div class="split-grid">
+                    <div>
+                        <h3>성별 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.users().genderDistribution() != null and !dashboard.users().genderDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.users().genderDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.users().genderDistribution() == null or dashboard.users().genderDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                    <div>
+                        <h3>연령대 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.users().ageDistribution() != null and !dashboard.users().ageDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.users().ageDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.users().ageDistribution() == null or dashboard.users().ageDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'accounts'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>계좌 통계</h2>
+                    <span class="panel__meta" th:text="'총 ' + ${#numbers.formatInteger(dashboard.accounts().totalAccounts(), 0, 'COMMA')} + '개'">총 0개</span>
+                </div>
+                <div>
+                    <h3>계좌 상태 분포</h3>
+                    <ul class="reason-list" th:if="${dashboard.accounts().statusDistribution() != null and !dashboard.accounts().statusDistribution().isEmpty()}">
+                        <li th:each="entry : ${dashboard.accounts().statusDistribution()}">
+                            <span th:text="${entry.key}">-</span>
+                            <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                        </li>
+                    </ul>
+                    <div class="empty" th:if="${dashboard.accounts().statusDistribution() == null or dashboard.accounts().statusDistribution().isEmpty()}">데이터가 없습니다.</div>
+                </div>
+                <div th:if="${dashboard.accounts().averageBalanceByGenderAge() != null and !dashboard.accounts().averageBalanceByGenderAge().isEmpty()}">
+                    <h3>성별/연령대별 평균 잔액</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>성별</th>
+                                <th>연령대</th>
+                                <th>평균 잔액</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${dashboard.accounts().averageBalanceByGenderAge()}">
+                                <td th:text="${row.gender()}">-</td>
+                                <td th:text="${row.ageGroup()}">-</td>
+                                <td th:text="${row.averageBalance() != null ? #numbers.formatInteger(row.averageBalance(), 0, 'COMMA') + ' 원' : '-'}">-</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'cards'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>카드 통계</h2>
+                    <span class="panel__meta" th:text="'총 ' + ${#numbers.formatInteger(dashboard.cards().totalCards(), 0, 'COMMA')} + '개'">총 0개</span>
+                </div>
+                <div class="split-grid">
+                    <div>
+                        <h3>상태 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.cards().statusDistribution() != null and !dashboard.cards().statusDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.cards().statusDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.cards().statusDistribution() == null or dashboard.cards().statusDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                    <div>
+                        <h3>유형 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.cards().typeDistribution() != null and !dashboard.cards().typeDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.cards().typeDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.cards().typeDistribution() == null or dashboard.cards().typeDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                    <div>
+                        <h3>발급사 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.cards().issuerDistribution() != null and !dashboard.cards().issuerDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.cards().issuerDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.cards().issuerDistribution() == null or dashboard.cards().issuerDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'transactions'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>거래 통계</h2>
+                    <span class="panel__meta">
+                        합계 <span th:text="${dashboard.transactions().amountSummary() != null and dashboard.transactions().amountSummary().total() != null ? #numbers.formatInteger(dashboard.transactions().amountSummary().total(), 0, 'COMMA') + ' 원' : '-'}">0 원</span>
+                        &middot; 평균 <span th:text="${dashboard.transactions().amountSummary() != null and dashboard.transactions().amountSummary().average() != null ? #numbers.formatInteger(dashboard.transactions().amountSummary().average(), 0, 'COMMA') + ' 원' : '-'}">0 원</span>
+                    </span>
+                </div>
+                <div>
+                    <h3>거래 유형 분포</h3>
+                    <ul class="reason-list" th:if="${dashboard.transactions().typeDistribution() != null and !dashboard.transactions().typeDistribution().isEmpty()}">
+                        <li th:each="entry : ${dashboard.transactions().typeDistribution()}">
+                            <span th:text="${entry.key}">-</span>
+                            <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                        </li>
+                    </ul>
+                    <div class="empty" th:if="${dashboard.transactions().typeDistribution() == null or dashboard.transactions().typeDistribution().isEmpty()}">데이터가 없습니다.</div>
+                </div>
+                <div class="split-grid" style="margin-top: 20px;">
+                    <div th:if="${dashboard.transactions().merchantCategoryStats() != null}">
+                        <h3>가맹점 통계</h3>
+                        <p class="muted">결측 <span th:text="${#numbers.formatInteger(dashboard.transactions().merchantCategoryStats().missingCount(), 0, 'COMMA')}">0</span>건
+                            (<span th:text="${dashboard.transactions().merchantCategoryStats().missingRate() != null ? #numbers.formatDecimal(dashboard.transactions().merchantCategoryStats().missingRate() * 100, 0, 2) + '%' : '-'}">0%</span>)</p>
+                        <ul class="reason-list" th:if="${dashboard.transactions().merchantCategoryStats().topValues() != null and !dashboard.transactions().merchantCategoryStats().topValues().isEmpty()}">
+                            <li th:each="item : ${dashboard.transactions().merchantCategoryStats().topValues()}">
+                                <span th:text="${item.name()}">-</span>
+                                <strong th:text="${#numbers.formatInteger(item.count(), 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                    </div>
+                    <div th:if="${dashboard.transactions().locationStats() != null}">
+                        <h3>지역 통계</h3>
+                        <p class="muted">결측 <span th:text="${#numbers.formatInteger(dashboard.transactions().locationStats().missingCount(), 0, 'COMMA')}">0</span>건</p>
+                        <ul class="reason-list" th:if="${dashboard.transactions().locationStats().topValues() != null and !dashboard.transactions().locationStats().topValues().isEmpty()}">
+                            <li th:each="item : ${dashboard.transactions().locationStats().topValues()}">
+                                <span th:text="${item.name()}">-</span>
+                                <strong th:text="${#numbers.formatInteger(item.count(), 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'detections'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>탐지 통계</h2>
+                    <span class="panel__meta">
+                        탐지 커버리지 <span th:text="${dashboard.detections().detectionCoverage() != null ? #numbers.formatDecimal(dashboard.detections().detectionCoverage() * 100, 0, 2) + '%' : '-'}">0%</span>
+                        &middot; 사기 확정률 <span th:text="${dashboard.detections().fraudRate() != null ? #numbers.formatDecimal(dashboard.detections().fraudRate() * 100, 0, 2) + '%' : '-'}">0%</span>
+                    </span>
+                </div>
+                <div class="split-grid">
+                    <div>
+                        <h3>사기확률 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.detections().fraudProbabilityDistribution() != null and !dashboard.detections().fraudProbabilityDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.detections().fraudProbabilityDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.detections().fraudProbabilityDistribution() == null or dashboard.detections().fraudProbabilityDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                    <div>
+                        <h3>엔진 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.detections().engineDistribution() != null and !dashboard.detections().engineDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.detections().engineDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.detections().engineDistribution() == null or dashboard.detections().engineDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                    <div>
+                        <h3>임계값 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.detections().thresholdDistribution() != null and !dashboard.detections().thresholdDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.detections().thresholdDistribution()}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.detections().thresholdDistribution() == null or dashboard.detections().thresholdDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'reports'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>사기 신고 정밀 분석</h2>
+                    <span class="panel__meta" th:text="'누적 신고 건수: ' + ${#numbers.formatInteger(dashboard.fraudReports().totalReports(), 0, 'COMMA')} + '건'">총 0건</span>
+                </div>
+
+                <div class="stat-grid" style="margin-bottom: 30px;">
+                    <div class="stat-card">
+                        <span class="stat-label">신고된 유니크 계좌</span>
+                        <strong class="stat-value" th:text="${#numbers.formatInteger(dashboard.fraudReports().distinctAccountCount(), 0, 'COMMA')}">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">중복 신고율</span>
+                        <strong class="stat-value" th:text="${dashboard.fraudReports().duplicateRate() != null ? #numbers.formatDecimal(dashboard.fraudReports().duplicateRate() * 100, 1, 1) + '%' : '0.0%'}">0%</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">평균 누적 신고수</span>
+                        <strong class="stat-value" th:text="${dashboard.fraudReports().averageReportCount() != null ? #numbers.formatDecimal(dashboard.fraudReports().averageReportCount(), 1, 1) : '0.0'}">0.0</strong>
+                    </div>
+                </div>
+
+                <div class="split-grid">
+                    <div>
+                        <h3>최다 신고 계좌 TOP 5</h3>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>계좌번호</th>
+                                    <th class="text-end">누적 횟수</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="item : ${dashboard.fraudReports().topAccounts()}">
+                                    <td th:text="${item.name()}">000-000-0000</td>
+                                    <td class="text-end" th:text="${#numbers.formatInteger(item.count(), 0, 'COMMA')} + '회'">0회</td>
+                                </tr>
+                                <tr th:if="${dashboard.fraudReports().topAccounts() == null or dashboard.fraudReports().topAccounts().isEmpty()}">
+                                    <td colspan="2" class="text-center">데이터가 없습니다.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>주요 신고 사유 분포</h3>
+                        <ul class="reason-list" th:if="${dashboard.fraudReports().reasonTop() != null and !dashboard.fraudReports().reasonTop().isEmpty()}">
+                            <li th:each="item : ${dashboard.fraudReports().reasonTop()}">
+                                <span th:text="${item.name()}">보이스피싱</span>
+                                <strong th:text="${#numbers.formatInteger(item.count(), 0, 'COMMA')} + '건'">0건</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.fraudReports().reasonTop() == null or dashboard.fraudReports().reasonTop().isEmpty()}">데이터가 없습니다.</div>
+
+                        <h3 style="margin-top: 20px;">신고 처리 상태</h3>
+                        <ul class="reason-list" th:if="${dashboard.fraudReports().statusDistribution() != null and !dashboard.fraudReports().statusDistribution().isEmpty()}">
+                            <li th:each="entry : ${dashboard.fraudReports().statusDistribution()}">
+                                <span th:text="${entry.key}">PENDING</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')} + '건'">0건</strong>
+                            </li>
+                        </ul>
+                        <div class="empty" th:if="${dashboard.fraudReports().statusDistribution() == null or dashboard.fraudReports().statusDistribution().isEmpty()}">데이터가 없습니다.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'blacklist'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>블랙리스트</h2>
+                    <span class="panel__meta" th:text="'총 ' + ${#numbers.formatInteger(dashboard.blacklist().totalBlacklist(), 0, 'COMMA')} + '건'">총 0건</span>
+                </div>
+                <div>
+                    <h3>차단 사유 분포</h3>
+                    <ul class="reason-list" th:if="${dashboard.blacklist().reasonDistribution() != null and !dashboard.blacklist().reasonDistribution().isEmpty()}">
+                        <li th:each="entry : ${dashboard.blacklist().reasonDistribution()}">
+                            <span th:text="${entry.key}">-</span>
+                            <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                        </li>
+                    </ul>
+                    <div class="empty" th:if="${dashboard.blacklist().reasonDistribution() == null or dashboard.blacklist().reasonDistribution().isEmpty()}">데이터가 없습니다.</div>
+                </div>
+                <div class="muted" style="margin-top: 20px;">
+                    <div>연관 거래: <strong th:text="${#numbers.formatInteger(dashboard.blacklist().relatedTransactionCount(), 0, 'COMMA')} + '건'">0건</strong></div>
+                    <div>연관 탐지: <strong th:text="${#numbers.formatInteger(dashboard.blacklist().relatedDetectionCount(), 0, 'COMMA')} + '건'">0건</strong></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'reference'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>기준 데이터</h2>
+                    <span class="panel__meta" th:text="'코드북 ' + ${#numbers.formatInteger(dashboard.referenceData().codebookCount(), 0, 'COMMA')} + '건'">코드북 0건</span>
+                </div>
+                <div>
+                    <h3>코드 분류 분포</h3>
+                    <ul class="reason-list" th:if="${dashboard.referenceData().codeTypeDistribution() != null and !dashboard.referenceData().codeTypeDistribution().isEmpty()}">
+                        <li th:each="entry : ${dashboard.referenceData().codeTypeDistribution()}">
+                            <span th:text="${entry.key}">-</span>
+                            <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                        </li>
+                    </ul>
+                    <div class="empty" th:if="${dashboard.referenceData().codeTypeDistribution() == null or dashboard.referenceData().codeTypeDistribution().isEmpty()}">데이터가 없습니다.</div>
+                </div>
+                <div th:if="${dashboard.referenceData().configEntries() != null and !dashboard.referenceData().configEntries().isEmpty()}" style="margin-top: 20px;">
+                    <h3>설정 목록</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>키</th>
+                                <th>값</th>
+                                <th>설명</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="entry : ${dashboard.referenceData().configEntries()}">
+                                <td th:text="${entry.configKey()}">-</td>
+                                <td th:text="${entry.configValue()}">-</td>
+                                <td th:text="${entry.description() ?: '-'}">-</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-content" th:classappend="${activeTab == 'cross'} ? 'active' : ''">
+            <section class="panel">
+                <div class="panel__header">
+                    <h2>연관 분석</h2>
+                    <span class="panel__meta">
+                        블랙리스트 탐지율 <span th:text="${dashboard.crossEntity().blacklistDetectionRate() != null ? #numbers.formatDecimal(dashboard.crossEntity().blacklistDetectionRate() * 100, 0, 2) + '%' : '-'}">0%</span>
+                    </span>
+                </div>
+                <div th:if="${dashboard.crossEntity().segmentMetrics() != null and !dashboard.crossEntity().segmentMetrics().isEmpty()}">
+                    <h3>집단별 요약 지표</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>구분</th>
+                                <th>값</th>
+                                <th>거래</th>
+                                <th>탐지</th>
+                                <th>사기</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${dashboard.crossEntity().segmentMetrics()}">
+                                <td th:text="${row.segmentType()}">-</td>
+                                <td th:text="${row.segmentValue()}">-</td>
+                                <td th:text="${#numbers.formatInteger(row.transactionCount(), 0, 'COMMA')}">0</td>
+                                <td th:text="${#numbers.formatInteger(row.detectedCount(), 0, 'COMMA')}">0</td>
+                                <td th:text="${#numbers.formatInteger(row.fraudCount(), 0, 'COMMA')}">0</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div th:if="${dashboard.crossEntity().accountRanking() != null and !dashboard.crossEntity().accountRanking().isEmpty()}" style="margin-top: 20px;">
+                    <h3>계좌 랭킹</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>계좌</th>
+                                <th>거래</th>
+                                <th>탐지</th>
+                                <th>사기</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${dashboard.crossEntity().accountRanking()}">
+                                <td th:text="${row.accountNumber()}">-</td>
+                                <td th:text="${#numbers.formatInteger(row.transactionCount(), 0, 'COMMA')}">0</td>
+                                <td th:text="${#numbers.formatInteger(row.detectedCount(), 0, 'COMMA')}">0</td>
+                                <td th:text="${#numbers.formatInteger(row.fraudCount(), 0, 'COMMA')}">0</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

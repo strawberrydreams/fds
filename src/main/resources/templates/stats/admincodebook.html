@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments/header :: common_head('코드북 관리 | FDS')}"></th:block>
+
+    <style>
+        /* 기존 스타일 유지 */
+        .codebook-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .codebook-grid .form-group input, .codebook-grid .form-group textarea { min-width: 0; width: 100%; }
+        .codebook-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+        .codebook-actions .btn { min-width: 120px; }
+        .codebook-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #4b5563; background: #f3f4f6; padding: 4px 8px; border-radius: 999px; }
+        .codebook-table td.small, .codebook-table th.small { width: 90px; white-space: nowrap; }
+        .codebook-table td.meta { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .codebook-table td.reason { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .codebook-table td.actions { white-space: nowrap; }
+        .codebook-table button { padding: 6px 10px; font-size: 12px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+        .codebook-table button:hover { background: #f3f4f6; }
+        .codebook-table button.danger { border-color: #fecaca; color: #dc2626; }
+        .codebook-table button.danger:hover { background: #fef2f2; }
+        .hint-text { font-size: 12px; color: #6b7280; }
+        /* stats-container 호환을 위한 추가 스타일 */
+        .stats-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .panel { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .stats-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
+
+<div class="stats-container">
+    <header class="stats-header">
+        <div>
+            <h1>코드북 관리</h1>
+            <p class="subtitle">안심 거래 및 실시간 이상거래 탐지 기준에 쓰이는 코드북을 관리합니다</p>
+        </div>
+        <div class="controls">
+            <a th:href="@{/admin/dashboard}" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; background: #eee; border-radius: 8px; color: #333;">관리자 대시보드</a>
+        </div>
+    </header>
+
+    <div id="codebook-alert" class="banner banner--info" style="display: none; padding: 15px; margin-bottom: 20px; border-radius: 8px;"></div>
+
+    <section class="panel">
+        <div class="panel__header" style="margin-bottom: 15px;">
+            <h2 style="margin:0;">코드북 안내</h2>
+            <span class="panel__meta" style="color:#888; font-size: 13px;">운영 기준을 빠르게 반영하기 위한 참조 데이터</span>
+        </div>
+        <div class="muted" style="color: #666; line-height: 1.6;">
+            <div>코드북은 시스템에서 사용하는 분류/상태/유형 값을 사람이 읽기 쉬운 이름으로 관리하는 참조 데이터입니다.</div>
+            <div>운영 중 정책 변경이나 새로운 유형이 생겨도 코드를 수정하지 않고 코드북만 갱신해 화면과 통계를 일관되게 유지할 수 있습니다.</div>
+            <div>활성/비활성 처리로 노출만 조정하고 데이터는 보존할 수 있어 감사 및 운영 대응에 유리합니다.</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel__header">
+            <h2>필터</h2>
+        </div>
+        <form id="filter-form" style="display: flex; gap: 15px; align-items: flex-end;">
+            <div class="form-group">
+                <label for="filter-code-type">코드 타입</label><br>
+                <select id="filter-code-type" style="padding: 10px; border-radius: 6px; border: 1px solid #ddd;"></select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px; background: #007bff; color: #fff; border: none; border-radius: 6px; cursor: pointer;">조회</button>
+            <button type="button" class="btn btn-secondary" id="filter-reset" style="padding: 10px 20px; background: #eee; border: none; border-radius: 6px; cursor: pointer;">초기화</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="panel__header">
+            <div>
+                <h2>코드북 편집</h2>
+                <div class="codebook-badge" id="form-mode">신규 등록 모드</div>
+            </div>
+        </div>
+        <form id="codebook-form">
+            <input type="hidden" id="codebook-id">
+            <input type="hidden" id="active" value="true">
+            <div class="codebook-grid">
+                <div class="form-group">
+                    <label for="code-type">코드 타입</label>
+                    <select id="code-type" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="code-key">코드 키</label>
+                    <input type="text" id="code-key" required maxlength="80" placeholder="예: PHISHING">
+                </div>
+                <div class="form-group">
+                    <label for="display-name">표시명</label>
+                    <input type="text" id="display-name" required maxlength="120" placeholder="예: 보이스피싱">
+                </div>
+                <div class="form-group">
+                    <label for="description">설명</label>
+                    <input type="text" id="description" maxlength="400" placeholder="코드 설명 입력">
+                </div>
+                <div class="form-group">
+                    <label for="change-reason">변경 사유</label>
+                    <input type="text" id="change-reason" maxlength="200" placeholder="예: 운영 기준 업데이트">
+                </div>
+            </div>
+            <div class="codebook-actions">
+                <button type="submit" class="btn btn-primary" id="save-button" style="padding: 12px 25px; background: #007bff; color: #fff; border: none; border-radius: 6px; cursor: pointer;">저장</button>
+                <button type="button" class="btn btn-secondary" id="form-reset" style="padding: 12px 25px; background: #eee; border: none; border-radius: 6px; cursor: pointer;">폼 초기화</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="panel__header">
+            <h2>코드북 목록</h2>
+            <span class="panel__meta" id="list-count">총 0건</span>
+        </div>
+        <div class="table-wrap" style="overflow-x: auto;">
+            <table class="codebook-table" id="codebook-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                <tr style="border-bottom: 2px solid #eee;">
+                    <th class="small">ID</th>
+                    <th>타입</th>
+                    <th>키</th>
+                    <th>표시명</th>
+                    <th>설명</th>
+                    <th class="small">활성</th>
+                    <th class="small">수정자</th>
+                    <th>변경 사유</th>
+                    <th class="small">수정일시</th>
+                    <th class="small">액션</th>
+                </tr>
+                </thead>
+                <tbody id="codebook-body"></tbody>
+            </table>
+        </div>
+        <div class="empty" id="codebook-empty" style="display:none; text-align: center; padding: 40px; color: #999;">코드북 데이터가 없습니다.</div>
+    </section>
+</div>
+
+<script th:inline="javascript">
+    const apiBase = "/api/stats/codebook";
+
+    const alertBox = document.getElementById("codebook-alert");
+    const listCount = document.getElementById("list-count");
+    const tableBody = document.getElementById("codebook-body");
+    const emptyState = document.getElementById("codebook-empty");
+
+    const filterForm = document.getElementById("filter-form");
+    const filterCodeType = document.getElementById("filter-code-type");
+    const filterReset = document.getElementById("filter-reset");
+
+    const form = document.getElementById("codebook-form");
+    const formMode = document.getElementById("form-mode");
+    const saveButton = document.getElementById("save-button");
+    const formReset = document.getElementById("form-reset");
+
+    const fieldId = document.getElementById("codebook-id");
+    const fieldCodeType = document.getElementById("code-type");
+    const fieldCodeKey = document.getElementById("code-key");
+    const fieldDisplayName = document.getElementById("display-name");
+    const fieldActive = document.getElementById("active");
+    const fieldDescription = document.getElementById("description");
+    const fieldChangeReason = document.getElementById("change-reason");
+
+    const CODE_TYPES = [
+        { value: "TRANSACTION_TYPE", label: "거래 유형" },
+        { value: "ACCOUNT_STATUS", label: "계좌 상태" },
+        { value: "CARD_STATUS", label: "카드 상태" },
+        { value: "CARD_TYPE", label: "카드 유형" },
+        { value: "REPORT_STATUS", label: "신고 상태" },
+        { value: "REPORT_REASON", label: "신고 사유" },
+        { value: "DETECTION_RESULT", label: "탐지 결과" }
+    ];
+
+    function showAlert(type, message) {
+        alertBox.className = "banner banner--" + type;
+        alertBox.style.backgroundColor = type === 'error' ? '#fdecea' : '#e8f5e9';
+        alertBox.style.color = type === 'error' ? '#d32f2f' : '#2e7d32';
+        alertBox.textContent = message;
+        alertBox.style.display = "block";
+    }
+
+    function clearAlert() {
+        alertBox.style.display = "none";
+        alertBox.textContent = "";
+    }
+
+    function formatDateTime(value) {
+        if (!value) return "-";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mi = String(date.getMinutes()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+    }
+
+    function buildOption(value, label) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        return option;
+    }
+
+    function ensureCodeTypeOption(selectEl, value) {
+        if (!value) return;
+        const exists = Array.from(selectEl.options).some(option => option.value === value);
+        if (!exists) {
+            selectEl.appendChild(buildOption(value, `기타 (${value})`));
+        }
+    }
+
+    function populateCodeTypeSelects() {
+        filterCodeType.innerHTML = "";
+        filterCodeType.appendChild(buildOption("", "전체"));
+        CODE_TYPES.forEach(item => {
+            filterCodeType.appendChild(buildOption(item.value, `${item.label} (${item.value})`));
+        });
+
+        fieldCodeType.innerHTML = "";
+        const placeholder = buildOption("", "코드 타입 선택");
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        fieldCodeType.appendChild(placeholder);
+        CODE_TYPES.forEach(item => {
+            fieldCodeType.appendChild(buildOption(item.value, `${item.label} (${item.value})`));
+        });
+    }
+
+    function normalizePayload() {
+        return {
+            codeType: fieldCodeType.value.trim(),
+            codeKey: fieldCodeKey.value.trim(),
+            displayName: fieldDisplayName.value.trim(),
+            description: fieldDescription.value.trim() || null,
+            active: fieldActive?.value === "true",
+            changeReason: fieldChangeReason.value.trim() || null
+        };
+    }
+
+    function setFormMode(isEdit) {
+        formMode.textContent = isEdit ? "수정 모드" : "신규 등록 모드";
+        saveButton.textContent = isEdit ? "수정 저장" : "신규 저장";
+    }
+
+    function resetFormFields() {
+        fieldId.value = "";
+        fieldCodeType.value = "";
+        fieldCodeKey.value = "";
+        fieldDisplayName.value = "";
+        if (fieldActive) {
+            fieldActive.value = "true";
+        }
+        fieldDescription.value = "";
+        fieldChangeReason.value = "";
+        setFormMode(false);
+    }
+
+    function fillForm(entry) {
+        ensureCodeTypeOption(fieldCodeType, entry.codeType);
+        fieldId.value = entry.codebookId ?? "";
+        fieldCodeType.value = entry.codeType ?? "";
+        fieldCodeKey.value = entry.codeKey ?? "";
+        fieldDisplayName.value = entry.displayName ?? "";
+        if (fieldActive) {
+            fieldActive.value = entry.active ? "true" : "false";
+        }
+        fieldDescription.value = entry.description ?? "";
+        fieldChangeReason.value = entry.changeReason ?? "";
+        setFormMode(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderList(items) {
+        tableBody.innerHTML = "";
+        if (!items || items.length === 0) {
+            emptyState.style.display = "block";
+            listCount.textContent = "총 0건";
+            return;
+        }
+        emptyState.style.display = "none";
+        listCount.textContent = `총 ${items.length}건`;
+
+        items.forEach(entry => {
+            const tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid #f0f0f0";
+
+            tr.innerHTML = `
+                <td class="small" style="padding: 12px;">${entry.codebookId ?? "-"}</td>
+                <td style="padding: 12px;">${entry.codeType ?? "-"}</td>
+                <td style="padding: 12px;">${entry.codeKey ?? "-"}</td>
+                <td style="padding: 12px;">${entry.displayName ?? "-"}</td>
+                <td class="meta" title="${entry.description ?? ""}" style="padding: 12px;">${entry.description ?? "-"}</td>
+                <td class="small" style="padding: 12px;">${entry.active ? "Y" : "N"}</td>
+                <td class="small" style="padding: 12px;">${entry.updatedBy ?? "-"}</td>
+                <td class="reason" title="${entry.changeReason ?? ""}" style="padding: 12px;">${entry.changeReason ?? "-"}</td>
+                <td class="small" style="padding: 12px;">${formatDateTime(entry.updatedAt)}</td>
+                <td class="actions" style="padding: 12px;">
+                    <button type="button" data-action="edit">수정</button>
+                    <button type="button" class="danger" data-action="delete">삭제</button>
+                </td>
+            `;
+
+            tr.querySelector('[data-action="edit"]').addEventListener("click", () => {
+                fillForm(entry);
+            });
+            tr.querySelector('[data-action="delete"]').addEventListener("click", () => {
+                handleDelete(entry);
+            });
+
+            tableBody.appendChild(tr);
+        });
+    }
+
+    async function loadList() {
+        clearAlert();
+        const codeType = filterCodeType.value.trim();
+        const url = codeType ? `${apiBase}?codeType=${encodeURIComponent(codeType)}` : apiBase;
+        try {
+            const response = await fetch(url, { headers: { "Accept": "application/json" } });
+            if (!response.ok) {
+                const message = await response.text();
+                showAlert("error", `조회 실패: ${message}`);
+                return;
+            }
+            const data = await response.json();
+            renderList(data);
+        } catch (error) {
+            showAlert("error", "서버에 연결할 수 없습니다.");
+        }
+    }
+
+    async function handleSave(event) {
+        event.preventDefault();
+        clearAlert();
+
+        const payload = normalizePayload();
+        if (!payload.codeType || !payload.codeKey || !payload.displayName) {
+            showAlert("error", "코드 타입, 코드 키, 표시명은 필수입니다.");
+            return;
+        }
+
+        const id = fieldId.value.trim();
+        const method = id ? "PUT" : "POST";
+        const url = id ? `${apiBase}/${id}` : apiBase;
+
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const message = await response.text();
+                showAlert("error", `${id ? "수정" : "생성"} 실패: ${message}`);
+                return;
+            }
+            await loadList();
+            resetFormFields();
+            showAlert("success", id ? "코드북이 수정되었습니다." : "코드북이 생성되었습니다.");
+        } catch (error) {
+            showAlert("error", "서버에 연결할 수 없습니다.");
+        }
+    }
+
+    async function handleDelete(entry) {
+        if (!entry || !entry.codebookId) return;
+        const confirmed = confirm(`정말 삭제할까요? (${entry.codeType} / ${entry.codeKey})`);
+        if (!confirmed) return;
+
+        clearAlert();
+        try {
+            const response = await fetch(`${apiBase}/${entry.codebookId}`, { method: "DELETE" });
+            if (!response.ok) {
+                const message = await response.text();
+                showAlert("error", `삭제 실패: ${message}`);
+                return;
+            }
+            await loadList();
+            resetFormFields();
+            showAlert("success", "코드북이 삭제되었습니다.");
+        } catch (error) {
+            showAlert("error", "서버에 연결할 수 없습니다.");
+        }
+    }
+
+    filterForm.addEventListener("submit", event => {
+        event.preventDefault();
+        loadList();
+    });
+
+    filterReset.addEventListener("click", () => {
+        filterCodeType.value = "";
+        loadList();
+    });
+
+    form.addEventListener("submit", handleSave);
+    formReset.addEventListener("click", () => {
+        resetFormFields();
+    });
+
+    populateCodeTypeSelects();
+    resetFormFields();
+    loadList();
+</script>
+</body>
+</html>
