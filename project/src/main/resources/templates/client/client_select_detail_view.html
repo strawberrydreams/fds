@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>고객 상세</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div class="container mt-4">
+
+    <h3>고객 상세 정보</h3>
+
+    <table class="table">
+        <tr><th>번호</th><td th:text="${clientDTO.clientNo}"></td></tr>
+        <tr><th>아이디</th><td th:text="${clientDTO.userId}"></td></tr>
+        <tr><th>이름</th><td th:text="${clientDTO.name}"></td></tr>
+        <tr><th>이메일</th><td th:text="${clientDTO.email}"></td></tr>
+        <tr><th>생년월일</th><td th:text="${#temporals.format(clientDTO.birth, 'yyyy-MM-dd')}"></td>
+        </tr>
+    </table>
+
+    <a th:href="@{/ClientUpdate(clientNo=${clientDTO.clientNo})}" class="btn btn-warning">수정</a>
+    <a th:href="@{/ClientDelete(clientNo=${clientDTO.clientNo})}" class="btn btn-danger">삭제</a>
+    <a th:href="@{/ClientSelect}" class="btn btn-secondary">목록</a>
+
+</div>
+
+</body>
+</html>
