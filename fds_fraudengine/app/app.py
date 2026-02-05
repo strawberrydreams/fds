@@ -72,4 +72,4 @@ def predict():
 
 if __name__ == '__main__':
     # 스프링 부트와 겹치지 않게 5000번 포트 유지
-    app.run(port=5001, debug=True)
+    app.run(port=5000, debug=True)

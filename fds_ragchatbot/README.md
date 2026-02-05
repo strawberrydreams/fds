@@ -18,11 +18,10 @@
 ## 프로젝트 구조
 
 ```
-fdsaichatbot/
+fds_ragchatbot/
 ├── 12_01/
 │   ├── lmstudio_gptoss20b_chat.py   # Flask 챗봇 서버 메인 코드
 │   ├── fds_docs.csv                 # 안심 거래/FDS FAQ 문서 (text, intent 컬럼)
-│   ├── unanswered_questions.txt     # 답변 불가 질문 로그
 │   └── __init__.py
 ├── main.py                          # (별도 용도 - TensorFlow 학습 예제)
 ├── requirements.txt                 # 의존성 목록

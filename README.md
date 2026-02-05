@@ -1,6 +1,6 @@
 # FDS (Fraud Detection System)
 
-실시간 이상거래 탐지 및 관리자 대시보드 시스템입니다. Spring Boot 백엔드, ML 기반 사기 탐지 엔진, RAG 기반 AI 챗봇으로 구성된 금융 사기 방지 통합 솔루션입니다.
+FDS는 안심거래 및 실시간 이상거래 탐지 시스템입니다. Spring Boot 백엔드, ML 기반 사기 탐지 엔진, RAG 기반 AI 챗봇으로 구성된 금융 사기 방지 통합 솔루션입니다.
 
 > **참고**: `Hyun71/` 디렉터리는 Spring Boot + Thymeleaf + JPA(Oracle/H2) 기반의 고객 정보 CRUD 데모 프로젝트로, 본 FDS 시스템과는 별도의 독립 프로젝트입니다.
 
@@ -8,9 +8,9 @@
 
 | 프로젝트 | 설명 | 기술 스택 | 포트 |
 |---------|------|----------|------|
-| **FDS** (메인) | 백엔드 API 및 관리자 대시보드 | Spring Boot 4.0.1, Java 21, Oracle | 8088 |
-| **fdsfraudengine** | ML 기반 사기 탐지 추론 API | Flask 3.1.2, XGBoost, LightGBM | 5001 |
-| **fdsaichatbot** | RAG 기반 고객 지원 챗봇 | Flask 3.1.2, TF-IDF, 로컬 LLM | 5001 |
+| **fds_main** (메인) | 백엔드 API 및 관리자 대시보드 | Spring Boot 4.0.1, Java 21, Oracle | 8088 |
+| **fds_fraudengine** | ML 기반 사기 탐지 추론 API | Flask 3.1.2, XGBoost, LightGBM | 5000 |
+| **fds_ragchatbot** | RAG 기반 고객 지원 챗봇 | Flask 3.1.2, TF-IDF, 로컬 LLM | 5001 |
 
 ## 핵심 기능
 
@@ -41,7 +41,7 @@
 
 ## 기술 스택
 
-### FDS (메인 백엔드)
+### fds_main (메인 백엔드)
 
 | 항목 | 기술 |
 |------|------|
@@ -53,7 +53,7 @@
 | Security | Spring Security 7, JWT (JJWT 0.11.5) |
 | Build | Gradle 9.2.1 |
 
-### fdsfraudengine (사기 탐지 엔진)
+### fds_fraudengine (사기 탐지 엔진)
 
 | 항목 | 기술 |
 |------|------|
@@ -62,7 +62,7 @@
 | Data Processing | pandas 2.3.3, scikit-learn 1.7.2 |
 | Model Serialization | joblib 1.5.3 |
 
-### fdsaichatbot (AI 챗봇)
+### fds_ragchatbot (AI 챗봇)
 
 | 항목 | 기술 |
 |------|------|
@@ -83,7 +83,7 @@
 ### 1. FDS 메인 프로젝트
 
 ```bash
-cd FDS
+cd fds_main
 
 # 환경 변수 설정 (JWT 시크릿)
 export FDS_SECURITY_JWT_SECRET="your-secret-key"
@@ -105,7 +105,7 @@ export FDS_SECURITY_JWT_SECRET="your-secret-key"
 ### 2. 사기 탐지 엔진
 
 ```bash
-cd fdsfraudengine
+cd fds_fraudengine
 
 # 의존성 설치
 pip install -r requirements.txt
@@ -115,12 +115,12 @@ cd app
 python app.py
 ```
 
-서버 시작: `http://localhost:5001`
+서버 시작: `http://localhost:5000`
 
 ### 3. AI 챗봇
 
 ```bash
-cd fdsaichatbot
+cd fds_ragchatbot
 
 # 의존성 설치
 pip install -r requirements.txt
@@ -134,7 +134,7 @@ python lmstudio_gptoss20b_chat.py
 
 서버 시작: `http://localhost:5001`
 
-> **주의**: 사기 탐지 엔진과 챗봇이 동일한 포트(5001)를 사용합니다. 동시 운영 시 포트 변경이 필요합니다.
+> **주의**: 사기 탐지 엔진 및 챗봇 실행 시 운영 환경에 맞게 포트 번호를 변경하여 주십시오. macOS 환경에서 5000번 포트는 Apple AirPlay에 기본으로 할당되어 있습니다.
 
 ## 사용 예
 
@@ -219,40 +219,76 @@ curl -X POST http://localhost:8088/api/v1/admin/blacklist \
 
 ## 디렉터리 구조
 
+### fds_main
+
+```text
+fds_main/
+├─ build.gradle
+├─ settings.gradle
+├─ gradlew
+├─ gradlew.bat
+├─ gradle/
+│  └─ wrapper/
+├─ src/
+│  ├─ main/
+│  │  ├─ java/kdt/fds/
+│  │  │  ├─ FdsApplication.java
+│  │  │  ├─ ServletInitializer.java
+│  │  │  ├─ account/
+│  │  │  ├─ admin/
+│  │  │  ├─ card/
+│  │  │  ├─ common/
+│  │  │  ├─ fraud/
+│  │  │  ├─ stats/
+│  │  │  ├─ transaction/
+│  │  │  └─ user/
+│  │  └─ resources/
+│  │     ├─ application.properties
+│  │     ├─ application-google.yml
+│  │     ├─ application-ora.yml
+│  │     ├─ static/
+│  │     │  ├─ css/
+│  │     │  └─ js/
+│  │     └─ templates/
+│  │        ├─ account/
+│  │        ├─ admin/
+│  │        ├─ card/
+│  │        ├─ chatbot/
+│  │        ├─ fragments/
+│  │        ├─ login/
+│  │        ├─ mypage/
+│  │        ├─ report/
+│  │        ├─ stats/
+│  │        └─ support/
+│  └─ test/
+│     └─ java/kdt/fds/FdsApplicationTests.java
+└─ README.md
 ```
-FDS/
-├── src/main/java/kdt/fds/project/
-│   ├── config/           # Spring Security, 필터 설정
-│   ├── controller/       # REST/MVC 컨트롤러
-│   ├── service/          # 비즈니스 로직
-│   │   ├── TransactionService.java   # 거래 처리 핵심
-│   │   ├── DetectionService.java     # 사기 탐지 엔진
-│   │   ├── FdsRuleEngine.java        # 규칙 기반 탐지
-│   │   └── AdminService.java         # 관리자 기능
-│   ├── repository/       # 데이터 접근 계층
-│   ├── entity/           # JPA 엔티티
-│   ├── dto/              # 데이터 전송 객체
-│   └── mapper/           # MyBatis 매퍼
-├── src/main/resources/
-│   ├── templates/        # Thymeleaf 템플릿
-│   ├── static/           # 정적 리소스 (CSS, JS)
-│   └── application.properties
-├── build.gradle
-└── docs/README.md
 
-fdsfraudengine/
-├── app/
-│   ├── app.py            # Flask API 서버
-│   └── models/
-│       ├── engine_a_card_fraud.pkl      # XGBoost 카드 모델
-│       └── engine_b_transfer_fraud.pkl  # LightGBM 송금 모델
-└── requirements.txt
+### fds_fraudengine
 
-fdsaichatbot/
-├── 12_01/
-│   ├── lmstudio_gptoss20b_chat.py   # Flask 챗봇 서버
-│   └── fds_docs.csv                 # FAQ 문서 (126개 Q&A)
-└── requirements.txt
+```text
+fds_fraudengine/
+├─ requirements.txt
+└─ app/
+   ├─ __init__.py
+   ├─ app.py
+   └─ models/
+      ├─ engine_a_card_fraud.pkl
+      └─ engine_b_transfer_fraud.pkl
+```
+
+### fds_ragchatbot
+
+```text
+fds_ragchatbot/
+├─ requirements.txt
+├─ main.py
+├─ README.md
+└─ 12_01/
+   ├─ __init__.py
+   ├─ fds_docs.csv
+   └─ lmstudio_gptoss20b_chat.py
 ```
 
 ## 설정
@@ -263,8 +299,6 @@ fdsaichatbot/
 server.port=8088
 spring.profiles.active=ora
 spring.jpa.hibernate.ddl-auto=update
-fds.security.jwt.secret=${FDS_SECURITY_JWT_SECRET:}
-fds.security.jwt.expiration-minutes=15
 ```
 
 ### 환경 변수 (챗봇)
