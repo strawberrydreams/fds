@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/FREEPDB1
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: scott
+    password: tiger
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    properties:
+        hibernate:
+          naming:
+            physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  sql:
+    init:
+      mode: never
