@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="styles">
+    <!-- Font Awesome 아이콘 -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* 오른쪽 아래 플로팅 버튼 */
+        .chat-fab {
+            position: fixed; right: 24px; bottom: 24px;
+            width: 64px; height: 64px; border-radius: 50%;
+            background-color: #0056b3; color: #fff;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            cursor: pointer; z-index: 1000;
+        }
+        .chat-fab i { font-size: 28px; }
+
+        /* 플로팅 챗봇 창 */
+        .chat-widget {
+            position: fixed; right: 24px; bottom: 100px;
+            width: 340px; max-height: 480px;
+            display: none; flex-direction: column;
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+            background-color: #fff; z-index: 999;
+        }
+
+        .chat-widget-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 12px;
+            background: linear-gradient(120deg, #0056b3, #3388ff);
+            color: #fff;
+        }
+        .chat-widget-header-left {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .chat-widget-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .chat-widget-title { font-size: 0.9rem; font-weight: bold; }
+
+        .chat-widget-subtitle {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        .chat-widget-close { cursor: pointer; }
+        .chat-widget-close i { font-size: 18px; }
+
+        /* 대화 영역 */
+        #chat-log {
+            padding: 10px; height: 320px; overflow-y: auto;
+            background-color: #f7f7fb;
+        }
+        .message { display: flex; margin-bottom: 8px; }
+        .avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            flex-shrink: 0; font-size: 16px;
+        }
+        .bot-message .avatar { background-color: #e6f0ff; color: #004499; }
+        .user-message .avatar { background-color: #e6ffe6; color: #008800; }
+
+        .bubble {
+            max-width: 70%; padding: 6px 9px;
+            border-radius: 10px; font-size: 0.9rem; line-height: 1.35;
+        }
+        .bot-message { flex-direction: row; }
+        .bot-message .bubble { margin-left: 6px; background-color: #f0f4ff; color: #002b5c; }
+        .user-message { flex-direction: row-reverse; }
+        .user-message .bubble { margin-right: 6px; background-color: #e6ffe6; color: #004400; }
+
+        /* 입력 영역 */
+        .chat-widget-input {
+            padding: 8px; border-top: 1px solid #ddd;
+            background-color: #fff; display: flex; gap: 6px;
+        }
+        #message { flex: 1; padding: 6px; font-size: 0.9rem; }
+        #send-btn {
+            padding: 6px 12px; font-size: 0.9rem;
+            cursor: pointer; border: none; border-radius: 6px;
+            background-color: #0056b3; color: #fff;
+            display: flex; align-items: center; gap: 4px;
+        }
+        #send-btn i { font-size: 0.8rem; }
+
+        .chat-widget-footer-text {
+            font-size: 0.72rem; color: #666;
+            padding: 4px 8px 8px 8px;
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 480px) {
+            .chat-widget { right: 8px; left: 8px; width: auto; }
+            .chat-fab { right: 16px; bottom: 16px; }
+        }
+    </style>
+</th:block>
+
+<th:block th:fragment="widget">
+    <!-- 플로팅 챗봇 창 -->
+    <div class="chat-widget" id="chat-widget">
+        <div class="chat-widget-header">
+            <div class="chat-widget-header-left">
+                <div class="chat-widget-avatar"><i class="fas fa-robot"></i></div>
+                <div>
+                    <div class="chat-widget-title">안심 거래 및 실시간 이상거래 탐지 Q&amp;A 챗봇</div>
+                    <div class="chat-widget-subtitle">안심 거래 및 실시간 이상거래 탐지 관련 문의를 안내한다</div>
+                </div>
+            </div>
+            <div class="chat-widget-close" id="chat-close"><i class="fas fa-xmark"></i></div>
+        </div>
+
+        <div id="chat-log"></div>
+
+        <div class="chat-widget-input">
+            <input type="text" id="message" placeholder="안심 거래 및 실시간 이상거래 탐지 관련 문의를 입력한다">
+            <button id="send-btn" type="button">
+                <i class="fas fa-paper-plane"></i>
+                전송
+            </button>
+        </div>
+        <div class="chat-widget-footer-text">
+            이 챗봇은 안심 거래 및 실시간 이상거래 탐지 지침이 정리된 CSV 파일에 등록된 내용을 바탕으로 답변한다.
+        </div>
+    </div>
+
+    <!-- 오른쪽 아래 플로팅 버튼 -->
+    <div class="chat-fab" id="chat-fab" title="안심 거래 및 실시간 이상거래 탐지 챗봇 열기">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <script>
+        const API_URLS = [
+            "http://localhost:5001/chat",
+            "http://127.0.0.1:5001/chat"
+        ];
+
+        async function fetchWithFallback(message) {
+            for (const url of API_URLS) {
+                try {
+                    const resp = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message })
+                    });
+                    if (resp.ok) return resp;
+                } catch (_) {
+                    // 다음 URL 시도
+                }
+            }
+            throw new Error("모든 API 서버 연결 실패");
+        }
+
+        const chatWidget = document.getElementById("chat-widget");
+        const chatFab = document.getElementById("chat-fab");
+        const chatClose = document.getElementById("chat-close");
+        const chatLog = document.getElementById("chat-log");
+        const messageInput = document.getElementById("message");
+        const sendBtn = document.getElementById("send-btn");
+
+        let isComposing = false;
+
+        /* 위젯 열기/닫기 */
+        chatFab.addEventListener("click", () => {
+            const show = chatWidget.style.display === "flex";
+            chatWidget.style.display = show ? "none" : "flex";
+            if (!show) messageInput.focus();
+        });
+        chatClose.addEventListener("click", () => chatWidget.style.display = "none");
+
+        /* 메시지 UI 반영 */
+        function appendMessage(text, role) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "message " + role + "-message";
+
+            const avatarDiv = document.createElement("div");
+            avatarDiv.className = "avatar";
+            const icon = document.createElement("i");
+            icon.className = role === "user" ? "fas fa-user" : "fas fa-robot";
+            avatarDiv.appendChild(icon);
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            bubble.textContent = text;
+
+            wrapper.appendChild(avatarDiv);
+            wrapper.appendChild(bubble);
+            chatLog.appendChild(wrapper);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            return bubble;
+        }
+
+        function startBuffering(targetEl) {
+            const base = "봇: 응답 생성 중";
+            const frames = ["", ".", "..", "..."];
+            let i = 0;
+            targetEl.textContent = base;
+            const timer = setInterval(() => {
+                i = (i + 1) % frames.length;
+                targetEl.textContent = base + frames[i];
+            }, 400);
+            return () => clearInterval(timer);
+        }
+
+        async function sendMessage() {
+            const msg = messageInput.value.trim();
+            if (!msg) return;
+
+            appendMessage("사용자: " + msg, "user");
+            messageInput.value = "";
+            messageInput.focus();
+
+            const botBubble = appendMessage("봇: ", "bot");
+            const stopBuffering = startBuffering(botBubble);
+
+            try {
+                const resp = await fetchWithFallback(msg);
+
+                if (!resp.ok) {
+                    stopBuffering();
+                    const data = await resp.json().catch(() => ({}));
+                    botBubble.textContent = "봇 오류: " + (data.error || "알 수 없는 오류가 발생했다");
+                    return;
+                }
+
+                if (!resp.body) {
+                    stopBuffering();
+                    const text = await resp.text();
+                    botBubble.textContent = "봇: " + text;
+                    return;
+                }
+
+                const reader = resp.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let botText = "";
+                let started = false;
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    if (!started) {
+                        stopBuffering();
+                        started = true;
+                    }
+                    botText += decoder.decode(value, { stream: true });
+                    botBubble.textContent = "봇: " + botText;
+                    chatLog.scrollTop = chatLog.scrollHeight;
+                }
+
+                botText += decoder.decode();
+                botBubble.textContent = "봇: " + botText;
+            } catch {
+                stopBuffering();
+                botBubble.textContent = "봇 오류: 서버에 연결할 수 없다";
+            }
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
+        messageInput.addEventListener("compositionstart", () => { isComposing = true; });
+        messageInput.addEventListener("compositionend", () => { isComposing = false; });
+        messageInput.addEventListener("keydown", e => {
+            if (e.key === "Enter" && !isComposing) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</th:block>
+</html>

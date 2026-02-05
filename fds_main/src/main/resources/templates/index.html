@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 홈')}"></th:block>
+
+    <style>
+        /* 홈 전용 스타일 */
+        .home-main { max-width: 1120px; margin: 0 auto; padding: 64px 24px 90px; display: flex; flex-direction: column; gap: 70px; }
+        .hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; align-items: center; }
+        .hero-eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 12px; color: #475569; margin-bottom: 12px; }
+        .hero-title { font-size: clamp(32px, 4vw, 52px); font-weight: 800; line-height: 1.1; margin-bottom: 16px; color: #0f172a; }
+        .hero-title span { color: #0ea5a4; }
+        .hero-desc { font-size: 17px; line-height: 1.7; color: #475569; margin-bottom: 24px; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 22px; border-radius: 999px; border: 1px solid transparent; font-weight: 600; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+        .btn.primary { background: #0ea5a4; color: #fff; box-shadow: 0 10px 24px rgba(14, 165, 164, 0.25); }
+        .btn.ghost { background: #fff; border-color: #e2e8f0; color: #0f172a; }
+        .btn:hover { transform: translateY(-2px); }
+
+        .hero-card { background: linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.65)); border: 1px solid rgba(226, 232, 240, 0.9); border-radius: 24px; padding: 28px; box-shadow: 0 30px 60px rgba(15, 23, 42, 0.1); backdrop-filter: blur(8px); }
+        .metric { display: grid; gap: 8px; padding: 18px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; margin-bottom: 14px; }
+        .metric .label { font-size: 12px; color: #475569; letter-spacing: 0.08em; text-transform: uppercase; }
+        .metric strong { font-size: 18px; color: #0f172a; }
+        .metric p { font-size: 14px; color: #475569; line-height: 1.5; margin-top: 5px; }
+
+        .reveal { animation: floatIn 0.8s ease-out both; }
+        @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body style="background: radial-gradient(900px 500px at 12% -10%, #e0f2fe 0%, rgba(224, 242, 254, 0) 60%), #f8fafc;">
+
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
+
+<main class="home-main">
+    <section class="hero reveal">
+        <div class="hero-text">
+            <p class="hero-eyebrow">안심거래 뱅킹</p>
+            <h1 class="hero-title">
+                FDS BANK
+                <span>안심 거래 및 실시간 이상거래 탐지</span>
+            </h1>
+            <p class="hero-desc">
+                Rule-based 및 AI 기반 탐지로 이상거래를 빠르게 분류하고,
+                사기 신고와 블랙리스트 관리로 피해 확산을 차단하는 안심거래 서비스입니다.
+            </p>
+            <div class="hero-actions">
+                <a th:href="@{/login}" class="btn primary">로그인</a>
+                <a th:href="@{/account/terms}" class="btn ghost">계좌 만들기</a>
+            </div>
+        </div>
+
+        <div class="hero-card">
+            <div class="metric">
+                <span class="label">3단계 탐지 파이프라인</span>
+                <strong>블랙리스트 · 한도 · AI 분석</strong>
+                <p>거래 요청 시 블랙리스트 확인 후 룰·AI 탐지를 통해 실시간 리스크를 정밀 분석합니다.</p>
+            </div>
+            <div class="metric">
+                <span class="label">Secure Action</span>
+                <strong>보류 · 승인 · 거절의 균형</strong>
+                <p>의심 거래는 관리자 판단 전까지 안전하게 보류되어 자산 피해를 예방합니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="reveal" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 50px;">
+        <div style="padding: 24px; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 20px rgba(0,0,0,0.02);">
+            <div style="font-size: 24px; margin-bottom: 12px;">🛡️</div>
+            <h3 style="font-size: 18px; margin-bottom: 8px;">실시간 탐지</h3>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6;">거래 발생 즉시 FDS 엔진이 개입하여 이상 신호를 감지합니다.</p>
+        </div>
+        <div style="padding: 24px; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 20px rgba(0,0,0,0.02);">
+            <div style="font-size: 24px; margin-bottom: 12px;">🚫</div>
+            <h3 style="font-size: 18px; margin-bottom: 8px;">동적 차단</h3>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6;">신고된 의심 계좌를 즉시 차단하여 금융 사고를 방지합니다.</p>
+        </div>
+        <div style="padding: 24px; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 20px rgba(0,0,0,0.02);">
+            <div style="font-size: 24px; margin-bottom: 12px;">⚙️</div>
+            <h3 style="font-size: 18px; margin-bottom: 8px;">유연한 정책</h3>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6;">운영 상황에 따라 탐지 룰과 임계치를 동적으로 조정합니다.</p>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

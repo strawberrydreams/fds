@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments/header :: common_head('입금하기')}"></th:block>
+
+    <style>
+        /* 본문 전용 스타일 (입금 페이지 특화) */
+        .container {
+            max-width: 450px;
+            margin: 60px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h2 { color: #28a745; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #28a745; padding-bottom: 15px; }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f1f8ff;
+            cursor: pointer;
+            outline: none;
+            transition: 0.3s;
+        }
+        .form-group select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.1);
+        }
+
+        .form-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #4b4b4b; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        input:focus { border-color: #28a745; outline: none; box-shadow: 0 0 5px rgba(40, 167, 69, 0.2); }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover { background-color: #218838; transform: translateY(-2px); }
+
+        .footer-link { text-align: center; margin-top: 20px; }
+        .footer-link a { color: #999; text-decoration: none; font-size: 14px; }
+        .footer-link a:hover { color: #666; text-decoration: underline; }
+
+        .error-msg {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
+
+<div class="container">
+    <h2>💰 입금하기</h2>
+
+    <div class="error-msg" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/account/deposit}" method="post">
+
+        <div class="form-group">
+            <label>입금할 계좌 선택</label>
+            <select name="accountNumber" required>
+                <option value="">-- 입금하실 계좌를 선택하세요 --</option>
+                <option th:each="acc : ${accounts}"
+                        th:value="${acc.accountNumber}"
+                        th:selected="${acc.accountNumber == accountNumber}"
+                        th:text="|${acc.accountNumber} (잔액: ${#numbers.formatInteger(acc.balance, 0, 'COMMA')}원)|">
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>입금 금액 (원)</label>
+            <input type="number" name="amount" min="100" placeholder="100원 이상 입력 가능" required>
+        </div>
+
+        <div class="form-group">
+            <label>계좌 비밀번호 (4자리)</label>
+            <input type="password"
+                   name="password"
+                   maxlength="4"
+                   pattern="\d{4}"
+                   inputmode="numeric"
+                   placeholder="비밀번호 4자리를 입력하세요"
+                   required>
+            <p style="font-size: 11px; color: #999; margin-top: 5px;">
+                * 안전한 거래를 위해 비밀번호를 확인합니다.
+            </p>
+        </div>
+
+        <button type="submit" class="btn-submit"> 입금 확정 </button>
+    </form>
+
+    <div class="footer-link">
+        <a th:href="@{/account/list}">← 취소하고 목록으로</a>
+    </div>
+</div>
+
+</body>
+</html>

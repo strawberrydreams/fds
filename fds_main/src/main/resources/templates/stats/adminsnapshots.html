@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments/header :: common_head('스냅샷 관리 | FDS')}"></th:block>
+    <th:block th:replace="~{stats/stats-common :: stats_head('스냅샷 관리 | FDS')}"></th:block>
+</head>
+<body>
+
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
+
+<div class="stats-container">
+    <header class="stats-header">
+        <div>
+            <h1>스냅샷 관리</h1>
+            <p class="subtitle">관리자 스냅샷 생성 및 조회</p>
+        </div>
+    </header>
+
+    <div th:if="${successMessage}" class="banner banner--success" th:text="${successMessage}">성공 메시지</div>
+    <div th:if="${errorMessage}" class="banner banner--error" th:text="${errorMessage}">에러 메시지</div>
+
+    <section class="panel">
+        <div class="panel__header">
+            <h2>스냅샷 생성</h2>
+            <span class="panel__meta">날짜 범위를 지정하여 스냅샷 생성</span>
+        </div>
+        <form th:action="@{/stats/admin/snapshots/generate}" method="post" class="form-row">
+            <div class="form-group">
+                <label for="fromDate">시작일</label>
+                <input type="date" id="fromDate" name="fromDate" required>
+            </div>
+            <div class="form-group">
+                <label for="toDate">종료일</label>
+                <input type="date" id="toDate" name="toDate" required>
+            </div>
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" name="forceRebuild" value="true">
+                    <span>강제 재생성</span>
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">스냅샷 생성</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="panel__header">
+            <h2>스냅샷 목록</h2>
+            <span class="panel__meta" th:text="'총 ' + ${snapshots.size()} + '개'">총 0개</span>
+        </div>
+
+        <div class="snapshot-grid" th:if="${snapshots != null and !snapshots.isEmpty()}">
+            <div th:each="snapshot : ${snapshots}"
+                 class="snapshot-card"
+                 th:classappend="${selectedSnapshotId != null and selectedSnapshotId == snapshot.snapshotId()} ? 'selected' : ''">
+                <a class="snapshot-link" th:href="@{/stats/admin/snapshots(snapshotId=${snapshot.snapshotId()})}">
+                    <div class="snapshot-title" th:text="${#temporals.format(snapshot.fromDate(), 'yyyy-MM-dd')} + ' ~ ' + ${#temporals.format(snapshot.toDate(), 'yyyy-MM-dd')}">2024-01-01 ~ 2024-01-07</div>
+                    <div class="snapshot-meta">
+                        <span th:if="${snapshot.generatedAt() != null}" th:text="'생성: ' + ${#temporals.format(snapshot.generatedAt(), 'yyyy-MM-dd HH:mm')}">생성: 2024-01-08 00:00</span>
+                        <br>
+                        <span th:text="'Scope: ' + ${snapshot.scope()}">Scope: BUSINESS</span>
+                    </div>
+                </a>
+                <div class="snapshot-actions">
+                    <a class="snapshot-download"
+                       th:href="@{/stats/admin/snapshots/download(snapshotId=${snapshot.snapshotId()})}"
+                       download>JSON 다운로드</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty" th:if="${snapshots == null or snapshots.isEmpty()}">
+            생성된 스냅샷이 없습니다.
+        </div>
+    </section>
+
+    <section class="panel" th:if="${snapshotDetail != null}">
+        <div class="panel__header">
+            <h2>스냅샷 상세</h2>
+            <span class="panel__meta" th:text="${selectedSnapshotId}">Snapshot ID</span>
+        </div>
+
+        <div class="muted" style="margin-bottom: 20px;">
+            <div>기간: <strong th:text="${snapshotDetail['fromDate']} + ' ~ ' + ${snapshotDetail['toDate']}">-</strong></div>
+            <div>생성 시각: <strong th:text="${snapshotDetail['generatedAt'] ?: '-'}">-</strong></div>
+            <div>스코프: <strong th:text="${snapshotDetail['scope'] ?: '-'}">-</strong></div>
+        </div>
+
+        <div th:if="${snapshotDetail['dashboard'] != null}">
+            <h3>대시보드 요약</h3>
+
+            <div class="stat-grid" style="margin-top: 15px;">
+                <div class="stat-card" th:if="${snapshotDetail['dashboard']['users'] != null}">
+                    <span class="stat-label">총 사용자</span>
+                    <strong class="stat-value" th:text="${snapshotDetail['dashboard']['users']['totalUsers'] != null ? #numbers.formatInteger(snapshotDetail['dashboard']['users']['totalUsers'], 0, 'COMMA') : '-'}">0</strong>
+                </div>
+                <div class="stat-card" th:if="${snapshotDetail['dashboard']['accounts'] != null}">
+                    <span class="stat-label">총 계좌</span>
+                    <strong class="stat-value" th:text="${snapshotDetail['dashboard']['accounts']['totalAccounts'] != null ? #numbers.formatInteger(snapshotDetail['dashboard']['accounts']['totalAccounts'], 0, 'COMMA') : '-'}">0</strong>
+                </div>
+                <div class="stat-card" th:if="${snapshotDetail['dashboard']['cards'] != null}">
+                    <span class="stat-label">총 카드</span>
+                    <strong class="stat-value" th:text="${snapshotDetail['dashboard']['cards']['totalCards'] != null ? #numbers.formatInteger(snapshotDetail['dashboard']['cards']['totalCards'], 0, 'COMMA') : '-'}">0</strong>
+                </div>
+                <div class="stat-card" th:if="${snapshotDetail['dashboard']['transactions'] != null}">
+                    <span class="stat-label">총 거래</span>
+                    <strong class="stat-value" th:text="${snapshotDetail['dashboard']['transactions']['totalTransactions'] != null ? #numbers.formatInteger(snapshotDetail['dashboard']['transactions']['totalTransactions'], 0, 'COMMA') : '-'}">0</strong>
+                </div>
+                <div class="stat-card" th:if="${snapshotDetail['dashboard']['detections'] != null}">
+                    <span class="stat-label">탐지 건수</span>
+                    <strong class="stat-value" th:text="${snapshotDetail['dashboard']['detections']['detectionCount'] != null ? #numbers.formatInteger(snapshotDetail['dashboard']['detections']['detectionCount'], 0, 'COMMA') : '-'}">0</strong>
+                </div>
+                <div class="stat-card" th:if="${snapshotDetail['dashboard']['detections'] != null}">
+                    <span class="stat-label">사기 확정</span>
+                    <strong class="stat-value" th:text="${snapshotDetail['dashboard']['detections']['fraudCount'] != null ? #numbers.formatInteger(snapshotDetail['dashboard']['detections']['fraudCount'], 0, 'COMMA') : '-'}">0</strong>
+                </div>
+            </div>
+
+            <div th:if="${snapshotDetail['dashboard']['users'] != null}" style="margin-top: 20px;">
+                <h3>사용자 통계</h3>
+                <div class="split-grid">
+                    <div th:if="${snapshotDetail['dashboard']['users']['genderDistribution'] != null}">
+                        <h4 style="font-size: 13px; color: #666; margin-bottom: 10px;">성별 분포</h4>
+                        <ul class="reason-list">
+                            <li th:each="entry : ${snapshotDetail['dashboard']['users']['genderDistribution']}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                    </div>
+                    <div th:if="${snapshotDetail['dashboard']['users']['ageDistribution'] != null}">
+                        <h4 style="font-size: 13px; color: #666; margin-bottom: 10px;">연령대 분포</h4>
+                        <ul class="reason-list">
+                            <li th:each="entry : ${snapshotDetail['dashboard']['users']['ageDistribution']}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${snapshotDetail['dashboard']['detections'] != null}" style="margin-top: 20px;">
+                <h3>탐지 통계</h3>
+                <div class="split-grid">
+                    <div th:if="${snapshotDetail['dashboard']['detections']['fraudProbabilityDistribution'] != null}">
+                        <h4 style="font-size: 13px; color: #666; margin-bottom: 10px;">사기확률 분포</h4>
+                        <ul class="reason-list">
+                            <li th:each="entry : ${snapshotDetail['dashboard']['detections']['fraudProbabilityDistribution']}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                    </div>
+                    <div th:if="${snapshotDetail['dashboard']['detections']['engineDistribution'] != null}">
+                        <h4 style="font-size: 13px; color: #666; margin-bottom: 10px;">엔진 분포</h4>
+                        <ul class="reason-list">
+                            <li th:each="entry : ${snapshotDetail['dashboard']['detections']['engineDistribution']}">
+                                <span th:text="${entry.key}">-</span>
+                                <strong th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}">0</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel" th:if="${snapshotDetail == null and snapshots != null and !snapshots.isEmpty()}">
+        <div class="empty">
+            스냅샷을 선택하면 상세 정보가 표시됩니다.
+        </div>
+    </section>
+</div>
+
+</body>
+</html>

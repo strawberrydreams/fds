@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>고객 목록</title>
+
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div class="container mt-4">
+
+    <h3>고객 목록</h3>
+
+    <table class="table table-bordered">
+        <tr>
+            <th>아이디</th>
+            <th>이름</th>
+            <th>성별</th>
+            <th></th>
+        </tr>
+
+        <tr th:each="c : ${list}">
+            <td th:text="${c.userId}"></td>
+            <td th:text="${c.name}"></td>
+            <td th:text="${c.gender}"></td>
+            <td>
+                <a th:href="@{/ClientSelectDetail(clientNo=${c.clientNo})}" class="btn btn-info">
+                    상세
+                </a>
+            </td>
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(list)}">
+            <td colspan="4">등록된 고객이 없습니다.</td>
+        </tr>
+    </table>
+
+    <a th:href="@{/ClientInsert}" class="btn btn-success">신규 등록</a>
+
+</div>
+
+</body>
+</html>

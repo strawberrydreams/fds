@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments/header :: common_head('주간 스냅샷 | FDS')}"></th:block>
+    <th:block th:replace="~{stats/stats-common :: stats_head('주간 스냅샷 | FDS')}"></th:block>
+</head>
+<body>
+
+<nav th:replace="~{fragments/header :: menu_and_widget}"></nav>
+
+<div class="stats-container">
+    <header class="stats-header">
+        <div>
+            <h1>주간 스냅샷</h1>
+            <p class="subtitle">주간 통계 집계 히스토리</p>
+            <p class="muted" style="margin-top: 8px; color: #666; font-size: 14px;">
+                이 페이지의 스냅샷은 전체 기준 통계 요약을 주간 단위로 보관한 자료입니다.
+            </p>
+        </div>
+    </header>
+
+    <section class="panel">
+        <div class="panel__header">
+            <h2>스냅샷 목록</h2>
+            <span class="panel__meta" th:text="'총 ' + ${snapshots.size()} + '개'">총 0개</span>
+        </div>
+
+        <div class="snapshot-grid" th:if="${snapshots != null and !snapshots.isEmpty()}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+            <a th:each="snapshot : ${snapshots}"
+               th:href="@{/stats/snapshots(snapshotId=${snapshot.snapshotId()})}"
+               class="snapshot-card"
+               th:classappend="${selectedSnapshotId != null and selectedSnapshotId == snapshot.snapshotId()} ? 'selected' : ''"
+               style="text-decoration: none; color: inherit; padding: 15px; border: 1px solid #eee; border-radius: 10px; background: #fff; transition: 0.2s;">
+                <div class="snapshot-title" th:text="${#temporals.format(snapshot.fromDate(), 'yyyy-MM-dd')} + ' ~ ' + ${#temporals.format(snapshot.toDate(), 'yyyy-MM-dd')}" style="font-weight: bold; margin-bottom: 5px;">2024-01-01 ~ 2024-01-07</div>
+                <div class="snapshot-meta" style="font-size: 12px; color: #888;">
+                    <span th:if="${snapshot.generatedAt() != null}" th:text="'생성: ' + ${#temporals.format(snapshot.generatedAt(), 'yyyy-MM-dd HH:mm')}">생성: 2024-01-08 00:00</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="empty" th:if="${snapshots == null or snapshots.isEmpty()}" style="text-align: center; padding: 40px; color: #999;">
+            생성된 스냅샷이 없습니다.
+        </div>
+    </section>
+
+    <section class="panel" th:if="${snapshotDetail != null}">
+        <div class="panel__header">
+            <h2>스냅샷 상세</h2>
+            <span class="panel__meta" th:text="${selectedSnapshotId}">Snapshot ID</span>
+        </div>
+
+        <div class="stat-grid" th:if="${snapshotDetail['kpi'] != null}">
+            <div class="stat-card">
+                <span class="stat-label">거래 건수</span>
+                <strong class="stat-value" th:text="${snapshotDetail['kpi']['transactionCount'] != null ? #numbers.formatInteger(snapshotDetail['kpi']['transactionCount'], 0, 'COMMA') : '-'}">0</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">거래 금액 합계</span>
+                <strong class="stat-value" th:text="${snapshotDetail['kpi']['totalAmount'] != null ? #numbers.formatInteger(snapshotDetail['kpi']['totalAmount'], 0, 'COMMA') + ' 원' : '-'}">0 원</strong>
+                <span class="stat-hint" th:text="'평균 ' + (${snapshotDetail['kpi']['averageAmount'] != null ? #numbers.formatInteger(snapshotDetail['kpi']['averageAmount'], 0, 'COMMA') + ' 원' : '-'})">평균 0 원</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">탐지 건수</span>
+                <strong class="stat-value" th:text="${snapshotDetail['kpi']['detectedCount'] != null ? #numbers.formatInteger(snapshotDetail['kpi']['detectedCount'], 0, 'COMMA') : '-'}">0</strong>
+                <span class="stat-hint" th:if="${snapshotDetail['kpi']['detectedRate'] != null}"
+                      th:text="'탐지율 ' + ${#numbers.formatDecimal(snapshotDetail['kpi']['detectedRate'] * 100, 0, 2)} + '%'">탐지율 0%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">사기 확정</span>
+                <strong class="stat-value" th:text="${snapshotDetail['kpi']['fraudCount'] != null ? #numbers.formatInteger(snapshotDetail['kpi']['fraudCount'], 0, 'COMMA') : '-'}">0</strong>
+                <span class="stat-hint" th:if="${snapshotDetail['kpi']['fraudRate'] != null}"
+                      th:text="'확정율 ' + ${#numbers.formatDecimal(snapshotDetail['kpi']['fraudRate'] * 100, 0, 2)} + '%'">확정율 0%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">평균 사기확률</span>
+                <strong class="stat-value" th:text="${snapshotDetail['kpi']['averageFraudProbability'] != null ? #numbers.formatDecimal(snapshotDetail['kpi']['averageFraudProbability'], 0, 3) : '-'}">-</strong>
+                <span class="stat-hint" th:if="${snapshotDetail['kpi']['medianFraudProbability'] != null}"
+                      th:text="'중앙 ' + ${#numbers.formatDecimal(snapshotDetail['kpi']['medianFraudProbability'], 0, 3)}">중앙 0.000</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">최신 탐지 시각</span>
+                <strong class="stat-value" th:text="${snapshotDetail['kpi']['latestDetectionAt'] ?: '-'}">-</strong>
+            </div>
+        </div>
+
+        <div class="muted" style="margin-top: 20px; font-size: 13px; color: #666;">
+            <div style="margin-bottom: 5px;">기간: <strong th:text="${snapshotDetail['fromDate']} + ' ~ ' + ${snapshotDetail['toDate']}">-</strong></div>
+            <div style="margin-bottom: 5px;">생성 시각: <strong th:text="${snapshotDetail['generatedAt'] ?: '-'}">-</strong></div>
+            <div>스코프: <strong th:text="${snapshotDetail['scope'] ?: '-'}">-</strong></div>
+        </div>
+    </section>
+
+    <section class="panel" th:if="${snapshotDetail == null and snapshots != null and !snapshots.isEmpty()}">
+        <div class="empty" style="text-align: center; padding: 40px; color: #999;">
+            스냅샷을 선택하면 상세 정보가 표시됩니다.
+        </div>
+    </section>
+</div>
+
+</body>
+</html>

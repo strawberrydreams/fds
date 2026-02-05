@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>내 계좌 목록 - FDS BANK</title>
+
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 내 계좌 목록')}"></th:block>
+
+    <style>
+        /* 전체 스타일 초기화 및 배경 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; }
+
+        .container {
+            max-width: 950px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h2 { color: #1a1a1a; margin-bottom: 25px; border-bottom: 3px solid #007bff; padding-bottom: 15px; display: flex; align-items: center; }
+        h2 span { margin-left: 10px; }
+
+        /* 메시지 영역 스타일 (상단 표시용) */
+        .msg { color: #155724; background: #d4edda; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #c3e6cb; }
+        .error-msg { color: #721c24; background: #f8d7da; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #f5c6cb; }
+
+        /* 테이블 스타일 */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 15px; border-bottom: 1px solid #e9ecef; text-align: center; vertical-align: middle; }
+        th { background-color: #f8f9fa; color: #495057; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; }
+        tr:hover { background-color: #f1f8ff; }
+
+        .status-badge { background: #007bff; color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .balance-text { font-weight: bold; color: #2c3e50; font-size: 16px; }
+
+        /* 버튼 기본 스타일 */
+        .btn { display: inline-block; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s; font-size: 14px; border: none; cursor: pointer; }
+        .btn-main { background-color: #007bff; color: white; margin-top: 10px; }
+        .btn-main:hover { background-color: #0056b3; transform: translateY(-2px); }
+
+        .btn-sm { padding: 6px 14px; font-size: 12px; margin: 2px; border-radius: 6px; color: white; display: inline-block; text-align: center; }
+        .btn-deposit { background-color: #28a745; }
+        .btn-withdraw { background-color: #dc3545; }
+        .btn-transfer { background-color: #6c757d; }
+
+        /* 삭제 버튼 스타일 전용 */
+        .btn-delete { background-color: #ff4d4d; }
+        .btn-delete:hover { background-color: #cc0000; }
+
+        .btn-box { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+
+        .action-cell { display: flex; justify-content: center; align-items: center; gap: 4px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
+
+<div class="container">
+    <h2>🏦 <span>내 계좌 목록</span></h2>
+
+    <div class="msg" th:if="${message}" th:text="${message}"></div>
+    <div class="error-msg" th:if="${error}" th:text="${error}"></div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>계좌 번호</th>
+            <th>상태</th>
+            <th>잔액</th>
+            <th>생성일</th>
+            <th>관리 업무</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="account : ${accounts}">
+            <td th:text="${account.accountNumber}" style="font-family: 'Courier New', monospace; font-size: 16px; font-weight: 600;"></td>
+            <td><span class="status-badge" th:text="${account.status}"></span></td>
+            <td><span class="balance-text" th:text="${#numbers.formatInteger(account.balance, 3, 'COMMA')} + '원'"></span></td>
+            <td th:text="${#temporals.format(account.createdAt, 'yyyy-MM-dd HH:mm')}" style="color: #6c757d; font-size: 13px;"></td>
+            <td class="action-cell">
+                <a th:href="@{/account/deposit(accountNumber=${account.accountNumber})}" class="btn btn-sm btn-deposit">입금</a>
+                <a th:href="@{/account/withdraw(accountNumber=${account.accountNumber})}" class="btn btn-sm btn-withdraw">인출</a>
+                <a th:href="@{/account/transfer(accountNumber=${account.accountNumber})}" class="btn btn-sm btn-transfer">송금</a>
+
+                <form th:action="@{/account/delete}" method="post"
+                      th:onsubmit="return confirm('정말 이 계좌를 해지하시겠습니까? 잔액이 0원이어야 하며 삭제 후 복구는 불가능합니다.')"
+                      style="display:inline;">
+                    <input type="hidden" name="accountId" th:value="${account.accountId}">
+                    <button type="submit" class="btn btn-sm btn-delete">삭제</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(accounts)}">
+            <td colspan="5" style="padding: 40px; color: #adb5bd; font-style: italic;">보유하신 계좌가 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="btn-box">
+        <a th:href="@{/account/transfer}" class="btn btn-main">💸 다른 계좌로 송금하기</a>
+        <a th:href="@{/account/generation}" class="btn btn-main">➕ 새 계좌 개설</a>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const errorMsg = /*[[${error}]]*/ null;
+    const successMsg = /*[[${message}]]*/ null;
+
+    if (errorMsg) {
+        alert(errorMsg);
+    }
+    if (successMsg) {
+        alert(successMsg);
+    }
+    /*]]>*/
+</script>
+
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDS 관리 시스템 v6.0 (Modular)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .content-section { display: none; }
+        .active-section { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .nav-link { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 sidebar shadow-sm text-white bg-dark min-vh-100">
+            <h4 class="text-center mb-5 mt-4 fw-bold text-primary">🛡️ FDS Admin</h4>
+            <ul class="nav flex-column gap-2 px-2">
+                <li class="nav-item">
+                    <a class="nav-link active text-white" data-section="dashboard">
+                        <i class="bi bi-speedometer2 me-2"></i> 실시간 대시보드
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" data-section="history">
+                        <i class="bi bi-search me-2"></i> 탐지 이력 조회
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" data-section="accounts">
+                        <i class="bi bi-credit-card me-2"></i> 계좌 목록 관리
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" data-section="management">
+                        <i class="bi bi-shield-slash me-2"></i> 차단 목록 관리
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" data-section="pending">
+                        <i class="bi bi-hourglass-split me-2"></i> 승인 대기 관리
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white-50" data-section="policy">
+                        <i class="bi bi-gear-fill me-2"></i> 규약 관리
+                    </a>
+                </li>
+
+                <li class="nav-item mt-5 pt-5 border-top border-secondary">
+                    <a class="nav-link text-danger fw-bold" id="btn-logout" style="cursor: pointer;">
+                        <i class="bi bi-box-arrow-right me-2"></i> 로그아웃
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="col-md-10 bg-light p-0">
+
+            <div id="section-dashboard" class="content-section active-section p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold">이상거래 탐지 현황</h2>
+                    <button class="btn btn-outline-primary rounded-pill px-4" id="btn-refresh">
+                        <i class="bi bi-arrow-clockwise me-1"></i> 데이터 갱신
+                    </button>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm p-4 border-start border-primary border-4">
+                            <h6 class="text-muted mb-2">오늘 총 거래</h6>
+                            <h2 id="total-count" class="mb-0 fw-bold">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm p-4 border-start border-warning border-4">
+                            <h6 class="text-danger mb-2">승인 대기 중 (Risk)</h6>
+                            <h2 id="fraud-count" class="text-danger mb-0 fw-bold">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm p-4 border-start border-danger border-4">
+                            <h6 class="text-danger mb-2">차단된 계좌 (Blacklist)</h6>
+                            <h2 id="blocked-count" class="text-danger mb-0 fw-bold">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div id="ranking-empty-msg" class="alert alert-success text-center m-3 d-none">
+                    <i class="bi bi-check-circle me-1"></i> 현재 신고된 의심 계좌가 없습니다.
+                </div>
+
+                <div id="ranking-card" class="card shadow-sm border-danger d-none">
+                    <div class="card-header bg-danger text-white fw-bold">
+                        🔥 신고 누적 위험 계좌 TOP 리스트 (Top Offenders)
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="text-center" width="10%">순위</th>
+                                <th width="25%">계좌번호</th>
+                                <th class="text-center" width="15%">누적 신고</th>
+                                <th>최신 신고 사유</th>
+                                <th class="text-center" width="15%">조치</th>
+                            </tr>
+                            </thead>
+                            <tbody id="ranking-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="section-history" class="content-section p-4">
+                <h2 class="mb-4 fw-bold">🔍 상세 탐지 이력</h2>
+                <div class="card shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">거래시간</th>
+                                <th>사용자</th> <th>출처 정보</th> <th>수취 정보</th> <th>금액</th>
+                                <th>분석결과</th> <th>판정</th> <th>삭제/신고</th>
+                            </tr>
+                            </thead>
+                            <tbody id="history-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-accounts" class="content-section p-4">
+                <h2 class="mb-4 fw-bold">💳 계좌 목록 관리</h2>
+                <div class="card shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">사용자 이름</th> <th>계좌번호</th>
+                                <th>현재 잔액</th> <th class="text-center">상태</th>
+                            </tr>
+                            </thead>
+                            <tbody id="account-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-management" class="content-section p-4">
+                <h2 class="mb-4 fw-bold">🚫 차단 목록 관리 (Blacklist)</h2>
+                <div class="alert alert-secondary">
+                    <i class="bi bi-shield-lock me-2"></i> 여기에 등록된 수취인 계좌로의 모든 송금 시도는 <b>즉시 차단</b>됩니다.
+                </div>
+                <div class="card shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">No.</th>
+                                <th>상태</th>
+                                <th>차단 계좌번호</th>
+                                <th>차단 사유</th>
+                                <th class="text-center">조치</th>
+                            </tr>
+                            </thead>
+                            <tbody id="management-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-pending" class="content-section p-4">
+                <h2 class="mb-4 fw-bold">⏳ 승인 대기 목록 (격리 중)</h2>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i> 의심 거래로 판명되어 <b>송금이 일시 정지</b>된 상태입니다. 승인 또는 거절을 선택하세요.
+                </div>
+                <div class="card shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">거래 ID</th>
+                                <th>탐지 사유</th>
+                                <th>사기확률</th>
+                                <th>현재 상태</th>
+                                <th class="text-center">최종 조치</th>
+                            </tr>
+                            </thead>
+                            <tbody id="pending-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-policy" class="content-section p-4">
+                <h2 class="mb-4 fw-bold">⚙️ 규약 및 정책 관리</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm p-4 mb-4">
+                            <h5 class="fw-bold mb-4"><i class="bi bi-shield-check me-2"></i>자동 승인 정책 관리</h5>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary">AI 탐지 임계치 (0.00 ~ 1.00)</label>
+                                <input type="range" class="form-range" id="threshold-range" min="0" max="100">
+
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-danger fw-bold">민감도 높음 (모두 차단)</small>
+                                    <span id="threshold-value-display" class="badge bg-primary fs-6">0.70</span>
+                                    <small class="text-success fw-bold">민감도 낮음 (모두 허용)</small>
+                                </div>
+                            </div>
+                            <hr class="my-4">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary">자동 승인 기준 금액 (원)</label>
+                                <div class="input-group">
+                                    <input type="number" id="auto-amount-input" class="form-control form-control-lg" placeholder="예: 10000">
+                                    <span class="input-group-text">원 이하 즉시 승인</span>
+                                </div>
+                                <div class="form-text text-info">
+                                    <i class="bi bi-info-circle me-1"></i> 블랙리스트가 아니고, AI 판정이 정상일 때 이 금액 이하면 자동 승인됩니다.
+                                </div>
+                            </div>
+                            <button class="btn btn-dark w-100 py-3 fw-bold" id="btn-save-policy">
+                                정책 설정 반영하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/utils.js"></script>
+
+<script type="module" src="/js/app.js"></script>
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">🚨 사기 의심 신고 접수</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">신고하려는 계좌: <strong id="modal-account-num" class="text-dark"></strong></p>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="reportReason" id="reason1" value="1" checked>
+                    <label class="form-check-label" for="reason1">보이스피싱 의심</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="reportReason" id="reason2" value="2">
+                    <label class="form-check-label" for="reason2">대포통장 의심</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="reportReason" id="reason3" value="3">
+                    <label class="form-check-label" for="reason3">중고거래 사기</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="reportReason" id="reason4" value="4">
+                    <label class="form-check-label" for="reason4">검찰/기관 사칭</label>
+                </div>
+
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="radio" name="reportReason" id="reasonOther" value="0">
+                    <label class="form-check-label" for="reasonOther">기타 (직접 입력)</label>
+                </div>
+                <textarea class="form-control mt-2" id="otherReasonText" rows="2" placeholder="상세 사유를 입력하세요..." disabled></textarea>
+
+                <input type="hidden" id="modal-tx-id">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger" id="btn-submit-report">신고하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

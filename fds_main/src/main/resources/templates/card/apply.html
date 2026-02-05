@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>카드 발급 신청 - FDS BANK</title>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 카드 발급 신청')}"></th:block>
+    <style>
+        .container { max-width: 500px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #007bff; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #007bff; padding-bottom: 15px; }
+
+        /* 입력 폼 스타일 보강 */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #4b4b4b; }
+
+        select, input {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            font-size: 16px; box-sizing: border-box; transition: 0.3s;
+        }
+        select:focus, input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
+
+        /* 읽기 전용(인증완료) 필드 스타일 */
+        input[readonly] { background-color: #f8f9fa; color: #6c757d; cursor: not-allowed; border: 1px dashed #cbd5e0; }
+
+        .btn-submit {
+            width: 100%; padding: 15px; background-color: #007bff; color: white;
+            border: none; border-radius: 8px; cursor: pointer; font-size: 18px;
+            font-weight: bold; transition: 0.3s; margin-top: 10px;
+        }
+        .btn-submit:hover { background-color: #0056b3; transform: translateY(-2px); }
+
+        .error-msg { color: #dc3545; background: #f8d7da; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 14px; }
+        .info-header { font-weight: bold; margin-bottom: 15px; color: #007bff; display: flex; align-items: center; gap: 5px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
+
+<div class="container">
+    <h2>💳 카드 발급 신청</h2>
+
+    <div class="error-msg" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/card/issue}" method="post">
+
+        <div class="info-header">
+            <span>✅</span>
+            <span th:text="${userName != null && userName != ''} ? '인증된 정보' : '정보 직접 입력'">정보 입력</span>
+        </div>
+
+        <div class="form-group">
+            <label>성함</label>
+            <input type="text" name="userName" th:value="${userName}"
+                   th:readonly="${userName != null && userName != '' && userName != '미인식'}"
+                   placeholder="성함을 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+            <label>생년월일 (6자리)</label>
+            <input type="text" name="userBirth" th:value="${userBirth}"
+                   th:readonly="${userBirth != null && userBirth != '' && userBirth != '미인식'}"
+                   maxlength="6" pattern="\d{6}" placeholder="예: 950101" required>
+        </div>
+
+        <hr style="margin: 30px 0; border: 0; border-top: 1px dashed #eee;">
+
+        <div class="form-group">
+            <label>카드 종류</label>
+            <select name="cardType" required>
+                <option value="CHECK">체크카드 (연결계좌 즉시 출금)</option>
+                <option value="CREDIT">신용카드 (한도 내 결제)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>연결할 계좌번호</label>
+            <select name="accountNumber" required>
+                <option value="">-- 계좌를 선택하세요 --</option>
+                <option th:each="acc : ${accounts}"
+                        th:value="${acc.accountNumber}"
+                        th:text="|${acc.accountNumber} (잔액: ${#numbers.formatInteger(acc.balance, 0, 'COMMA')}원)|">
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>계좌 비밀번호 (4자리)</label>
+            <input type="password" name="accountPassword" maxlength="4" pattern="\d{4}"
+                   inputmode="numeric" placeholder="연결할 계좌의 비밀번호를 입력하세요" required>
+            <p style="font-size: 11px; color: #999; margin-top: 5px;">* 보안을 위해 계좌 비밀번호 확인이 필요합니다.</p>
+        </div>
+
+        <button type="submit" class="btn-submit">카드 발급 완료</button>
+    </form>
+</div>
+
+</body>
+</html>

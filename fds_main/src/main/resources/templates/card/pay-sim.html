@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>FDS BANK - 가상 결제 시뮬레이터</title>
+    <th:block th:replace="~{fragments/header :: common_head('FDS BANK - 가상 결제')}"></th:block>
+    <style>
+        .pay-container { max-width: 500px; margin: 60px auto; background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-top: 8px solid #007bff; }
+        .merchant-badge { background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px; font-weight: bold; color: #555; border: 1px dashed #ccc; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .btn-pay { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-pay:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: menu_and_widget}"></div>
+
+<div class="pay-container">
+    <h2 style="text-align: center; margin-bottom: 10px;">🛒 가상 결제창</h2>
+    <div class="merchant-badge">가맹점: FDS 시뮬레이터 스토어</div>
+
+    <div th:if="${error}" th:text="${error}" style="color: #dc3545; background: #fff5f5; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 20px;"></div>
+
+    <form th:action="@{/pay/execute}" method="post">
+        <div class="input-group">
+            <label>카드 번호</label>
+            <input type="text" name="cardNumber" placeholder="0000-0000-0000-0000" required>
+        </div>
+
+        <div class="input-group">
+            <label>가맹점 명칭</label>
+            <input type="text" name="merchantName" value="스타벅스 가산점" required>
+        </div>
+
+        <div class="input-group">
+            <label>결제 금액</label>
+            <input type="number" name="amount" placeholder="결제하실 금액을 입력하세요" required>
+        </div>
+
+        <button type="submit" class="btn-pay">결제하기</button>
+    </form>
+
+    <p style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
+        * 실제 결제는 발생하지 않으며 테스트용 데이터만 생성됩니다.
+    </p>
+</div>
+
+</body>
+</html>
