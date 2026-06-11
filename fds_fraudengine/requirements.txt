@@ -1,6 +1,6 @@
-pandas==2.3.3 # conda
+pandas==3.0.3
 joblib==1.5.3
-xgboost==3.1.2
+xgboost==3.2.0
 lightgbm==4.6.0
-scikit-learn==1.7.2
-flask==3.1.2
+scikit-learn==1.9.0
+flask==3.1.3

@@ -7,7 +7,7 @@ Spring Boot를 기반으로 하여 대규모 거래 트래픽 처리, Rule-based
 
 ## 🛠 Tech Stack
 - **Language**: Java 21
-- **Framework**: Spring Boot 4.0.1 (Spring Data JPA, Spring Web)
+- **Framework**: Spring Boot 4.1.0 (Spring Data JPA, Spring Web)
 - **Database**: Oracle Database
 - **Architecture**: Layered Architecture (Controller - Service - Repository)
 - **External Communication**: REST Template (Connecting to Flask AI Server)

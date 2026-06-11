@@ -37,6 +37,28 @@ out/
 ### VS Code ###
 .vscode/
 
+### Python ###
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+### AI Assistant ###
+.claude/
+CLAUDE.md
+AGENT.md
+AGENTS.md
+GEMINI.md
+.cursor/
+.cursorrules
+
+### Runtime Artifacts ###
+unanswered_questions.txt
+*.log
+
 ### Secrets ###
 googlevision.json
 google-key.json
+.env
+.env.*
