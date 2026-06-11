@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/FREEPDB1
+    url: ${DB_URL:jdbc:oracle:thin:@localhost:1521/FREEPDB1}
     driver-class-name: oracle.jdbc.OracleDriver
-    username: scott
-    password: tiger
+    username: ${DB_USERNAME:scott}
+    password: ${DB_PASSWORD:tiger}
 
   jpa:
     hibernate:

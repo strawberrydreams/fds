@@ -8,9 +8,9 @@ FDS는 안심거래 및 실시간 이상거래 탐지 시스템입니다. Spring
 
 | 프로젝트 | 설명 | 기술 스택 | 포트 |
 |---------|------|----------|------|
-| **fds_main** (메인) | 백엔드 API 및 관리자 대시보드 | Spring Boot 4.0.1, Java 21, Oracle | 8088 |
-| **fds_fraudengine** | ML 기반 사기 탐지 추론 API | Flask 3.1.2, XGBoost, LightGBM | 5000 |
-| **fds_ragchatbot** | RAG 기반 고객 지원 챗봇 | Flask 3.1.2, TF-IDF, 로컬 LLM | 5001 |
+| **fds_main** (메인) | 백엔드 API 및 관리자 대시보드 | Spring Boot 4.1.0, Java 21, Oracle | 8088 |
+| **fds_fraudengine** | ML 기반 사기 탐지 추론 API | Flask 3.1.3, XGBoost, LightGBM | 5000 |
+| **fds_ragchatbot** | RAG 기반 고객 지원 챗봇 | Flask 3.1.3, TF-IDF, 로컬 LLM | 5001 |
 
 ## 핵심 기능
 
@@ -46,47 +46,50 @@ FDS는 안심거래 및 실시간 이상거래 탐지 시스템입니다. Spring
 | 항목 | 기술 |
 |------|------|
 | Language | Java 21 |
-| Framework | Spring Boot 4.0.1 |
+| Framework | Spring Boot 4.1.0 |
 | ORM | Spring Data JPA, Hibernate |
 | Database | Oracle (운영), H2 (개발) |
 | View | Thymeleaf |
-| Security | Spring Security 7, JWT (JJWT 0.11.5) |
-| Build | Gradle 9.2.1 |
+| Security | Spring Security 7 (폼 로그인, BCrypt) |
+| Build | Gradle 9.5.1 |
 
 ### fds_fraudengine (사기 탐지 엔진)
 
 | 항목 | 기술 |
 |------|------|
-| Framework | Flask 3.1.2 |
-| ML Engine | XGBoost 3.1.2 (카드), LightGBM 4.6.0 (송금) |
-| Data Processing | pandas 2.3.3, scikit-learn 1.7.2 |
+| Framework | Flask 3.1.3 |
+| ML Engine | XGBoost 3.2.0 (카드), LightGBM 4.6.0 (송금) |
+| Data Processing | pandas 3.0.3, scikit-learn 1.9.0 |
 | Model Serialization | joblib 1.5.3 |
 
 ### fds_ragchatbot (AI 챗봇)
 
 | 항목 | 기술 |
 |------|------|
-| Framework | Flask 3.1.2 |
+| Framework | Flask 3.1.3 |
 | Text Search | scikit-learn TF-IDF (문자 2~4-gram) |
 | LLM | OpenAI 호환 API (LM Studio 등) |
-| Data | NumPy 1.26.4, pandas 2.3.3 |
+| Data | NumPy 2.4.6, pandas 3.0.3 |
 
 ## 설치 방법
 
 ### 사전 요구사항
 
 - Java 21+
-- Python 3.10+
+- Python 3.11+ (pandas 3.x, scikit-learn 1.9+ 요구사항)
 - Oracle Database (또는 H2)
 - LM Studio (챗봇용 로컬 LLM)
+- OpenMP 런타임 — macOS에서 XGBoost/LightGBM 실행 시 필요 (`brew install libomp`)
 
 ### 1. FDS 메인 프로젝트
 
 ```bash
 cd fds_main
 
-# 환경 변수 설정 (JWT 시크릿)
-export FDS_SECURITY_JWT_SECRET="your-secret-key"
+# (선택) DB 접속 정보 오버라이드 — 미설정 시 application.properties의 기본값 사용
+export DB_URL="jdbc:oracle:thin:@localhost:1521/FREEPDB1"
+export DB_USERNAME="scott"
+export DB_PASSWORD="tiger"
 
 # 빌드 및 실행
 ./gradlew bootRun
@@ -157,7 +160,7 @@ curl -X POST http://localhost:8088/api/v1/transactions \
 
 ```bash
 # 송금 거래 사기 확률 예측
-curl -X POST http://localhost:5001/api/predict \
+curl -X POST http://localhost:5000/api/predict \
   -H "Content-Type: application/json" \
   -d '{"tx_type": "TRANSFER", "amount": 5000000, "old_bal": 5000000}'
 
@@ -175,14 +178,16 @@ curl -X POST http://localhost:5001/chat \
 
 ### 관리자 API
 
+관리자 API(`/api/v1/admin/**`)는 Spring Security 폼 로그인 기반 세션 인증과 `ROLE_ADMIN` 권한이 필요합니다. 로그인 후 발급된 세션 쿠키를 함께 전송합니다.
+
 ```bash
 # 보류된 거래 승인
 curl -X POST http://localhost:8088/api/v1/admin/approve/123 \
-  -H "Authorization: Bearer {JWT_TOKEN}"
+  -b "JSESSIONID={로그인 세션 쿠키}"
 
 # 계좌 블랙리스트 등록
 curl -X POST http://localhost:8088/api/v1/admin/blacklist \
-  -H "Authorization: Bearer {JWT_TOKEN}" \
+  -b "JSESSIONID={로그인 세션 쿠키}" \
   -H "Content-Type: application/json" \
   -d '{"accountNum": "220-987-654321", "reason": "다수 신고 접수"}'
 ```
@@ -300,6 +305,16 @@ server.port=8088
 spring.profiles.active=ora
 spring.jpa.hibernate.ddl-auto=update
 ```
+
+### 환경 변수 (FDS 메인)
+
+| 변수명 | 설명 | 기본값 |
+|--------|------|--------|
+| `DB_URL` | Oracle JDBC 접속 URL | `jdbc:oracle:thin:@localhost:1521/FREEPDB1` |
+| `DB_USERNAME` | DB 사용자명 | `scott` |
+| `DB_PASSWORD` | DB 비밀번호 | `tiger` |
+
+> Google Vision OCR 사용 시 서비스 계정 키 파일을 `fds_main/src/main/resources/googlevision.json` 경로에 둡니다. (`.gitignore`에 등록되어 있어 커밋되지 않습니다.)
 
 ### 환경 변수 (챗봇)
 
